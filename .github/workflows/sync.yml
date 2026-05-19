@@ -1,4 +1,4 @@
-```yaml
+yaml
 name: Sync Strava Coach
 
 on:
@@ -58,4 +58,3 @@ jobs:
             git commit -m "🤖 Auto-update: $(date -u +'%Y-%m-%d %H:%M UTC')"
             git push
           fi
-```
