@@ -1,0 +1,46 @@
+name: Sync Strava Coach
+
+on:
+  schedule:
+    - cron: '0 12 * * *'   # 09:00 BRT (UTC-3)
+    - cron: '0 18 * * *'   # 15:00 BRT
+    - cron: '0 1 * * *'    # 22:00 BRT (do dia anterior em UTC)
+  workflow_dispatch:        # Permite rodar manual também
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: pip install requests
+      
+      - name: Create .env file
+        run: |
+          echo "CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }}" > .env
+          echo "INTERVALS_API_KEY=${{ secrets.INTERVALS_API_KEY }}" >> .env
+          echo "STRAVA_CLIENT_ID=${{ secrets.STRAVA_CLIENT_ID }}" >> .env
+          echo "STRAVA_CLIENT_SECRET=${{ secrets.STRAVA_CLIENT_SECRET }}" >> .env
+          echo "STRAVA_REFRESH_TOKEN=${{ secrets.STRAVA_REFRESH_TOKEN }}" >> .env
+      
+      - name: Run Strava Coach
+        run: python strava_coach.py
+      
+      - name: Generate Dashboard
+        run: python dashboard_generator.py
+      
+      - name: Commit & Push
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git add -A
+          git diff --staged --quiet || git commit -m "Auto-update: $(date +'%Y-%m-%d %H:%M')"
+          git push
