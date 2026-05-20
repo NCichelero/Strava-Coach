@@ -1046,6 +1046,26 @@ def prever_ftp(treinos):
 
 # ─── Helpers UI ────────────────────────────────────────────────────────────
 
+# ─── ROLO vs RUA ──────────────────────────────────────────────────────────
+
+def recomendar_local(nome_treino):
+    """Recomenda ROLO ou RUA baseado no tipo de treino"""
+    nome_lower = nome_treino.lower()
+    
+    # ROLO MELHOR (intervalados — precisão é crítica)
+    rolo_melhor = ['threshold', 'vo2max', '30/30', 'billat', 'rønnestad', 'sweet spot', 'ss ',
+                   'criss', 'over-under', 'interval', 'test', 'teste', 'ftp', 'sprint', 'bossi']
+    
+    # RUA INDIFERENTE (long rides, endurance — psicológico importa)
+    rua_ok = ['long', 'longo', 'endurance', 'z2', 'recovery', 'spin', '☘️', 'race sim']
+    
+    if any(k in nome_lower for k in rolo_melhor):
+        return 'ROLO', '🏠', '#3b82f6', 'Melhor no rolo (precisão controlada)'
+    elif any(k in nome_lower for k in rua_ok):
+        return 'RUA', '🚴', '#10b981', 'Rua OK (treino psicológico)'
+    else:
+        return 'AMBOS', '↔️', '#fbbf24', 'Rua ou rolo (indiferente)'
+
 def watts_pct(pmin, pmax): return f"{int(FTP * pmin)}-{int(FTP * pmax)}W"
 def fc_zona_str(z):
     if z in ZONAS_FC:
@@ -1175,6 +1195,9 @@ def build_dia_semana_atual(dia_info, idx):
     h += f'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
     h += f'<span style="font-size:10px;color:{cor_status};font-weight:600;padding:3px 8px;background:{cor_status}22;border-radius:4px;">{status.upper()}</span>'
     h += f'<span style="font-size:11px;color:#fbbf24;">{plan["nome"]}</span>'
+    if cat == 'ciclismo':
+        local, icon_local, cor_local, desc_local = recomendar_local(plan["nome"])
+        h += f'<span style="font-size:10px;color:{cor_local};font-weight:600;padding:3px 8px;background:{cor_local}22;border-radius:4px;title="{desc_local}">{icon_local} {local}</span>'
     h += f'</div>'
     h += f'</div>'
 
@@ -1234,7 +1257,12 @@ def build_dia_proxima(wd, plan):
     h = f'<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:10px;border-left:3px solid {cor};">'
     h += f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;">'
     h += f'<div style="font-size:13px;color:#ddd;font-weight:600;">{icon} {dias_pt[wd]} <span style="color:#888;font-weight:400;margin-left:6px;font-size:11px;">{plan["horario"]}</span></div>'
-    h += f'<div style="font-size:11px;color:#fbbf24;">{plan["nome"]} · {plan["dur_total"]}min · TSS {plan.get("tss_alvo", 0)}</div>'
+    h += f'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
+    h += f'<span style="font-size:11px;color:#fbbf24;">{plan["nome"]} · {plan["dur_total"]}min · TSS {plan.get("tss_alvo", 0)}</span>'
+    if cat == 'ciclismo':
+        local, icon_local, cor_local, desc_local = recomendar_local(plan["nome"])
+        h += f'<span style="font-size:10px;color:{cor_local};font-weight:600;padding:3px 8px;background:{cor_local}22;border-radius:4px;title="{desc_local}">{icon_local} {local}</span>'
+    h += f'</div>'
     h += f'</div>'
     if cat == 'ciclismo':
         h += '<div style="display:grid;grid-template-columns:200px 60px 1fr 1fr 90px;gap:8px;font-size:10px;color:#666;padding:4px 8px;background:#1a1a1a;border-radius:4px;margin-bottom:4px;">'
