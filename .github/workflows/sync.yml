@@ -1,10 +1,17 @@
-﻿name: Sync Strava Coach
+name: Sync Strava Coach
 
 on:
   schedule:
-    - cron: '0 12 * * *'
-    - cron: '0 18 * * *'
-    - cron: '0 1 * * *'
+    # São Paulo (UTC-3) → converter para UTC
+    # 08:00 BRT = 11:00 UTC
+    - cron: '0 11 * * *'
+    # 14:00 BRT = 17:00 UTC
+    - cron: '0 17 * * *'
+    # 21:00 BRT (noite) = 00:00 UTC (próximo dia de UTC)
+    # ⚠️ CUIDADO: roda à meia-noite UTC = 21:00 BRT do dia anterior
+    - cron: '0 0 * * *'
+  
+  # Permitir trigger manual
   workflow_dispatch:
 
 permissions:
@@ -15,21 +22,20 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v4
+      # Clone o repo com permissão de push
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # Setup Python
+      - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install requests
+      # Instalar dependência
+      - run: pip install requests
       
+      # Criar .env com credenciais do GitHub Secrets
       - name: Create .env file
         run: |
           echo "CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }}" > .env
@@ -38,20 +44,28 @@ jobs:
           echo "STRAVA_CLIENT_SECRET=${{ secrets.STRAVA_CLIENT_SECRET }}" >> .env
           echo "STRAVA_REFRESH_TOKEN=${{ secrets.STRAVA_REFRESH_TOKEN }}" >> .env
       
+      # Rodar scripts
       - name: Run Strava Coach
         run: python strava_coach.py
       
       - name: Generate Dashboard
         run: python dashboard_generator.py
       
-      - name: Commit & Push
+      # Git commit + push (só se houver mudanças)
+      - name: Commit and Push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
+          
           if git diff --staged --quiet; then
-            echo "Nada para commitar"
+            echo "ℹ️ Nenhuma mudança, pulando commit"
           else
             git commit -m "Auto-update: $(date -u +'%Y-%m-%d %H:%M UTC')"
             git push
           fi
+      
+      # Notificar no caso de erro
+      - name: Notify on Failure
+        if: failure()
+        run: echo "❌ Workflow falhou em $(date -u +'%Y-%m-%d %H:%M UTC')"
