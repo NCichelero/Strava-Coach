@@ -1,11 +1,7 @@
 {
   "semana_referencia": "2026-05-18",
-<<<<<<< HEAD
   "intensidade_atual": "leve",
-  "ultima_atualizacao": "2026-05-20 01:35"
-=======
   "bloco_atual": "base",
   "semana_no_bloco": 1,
-  "ultima_atualizacao": "2026-05-19 22:59 BRT"
->>>>>>> 20978ba (v10.1: Periodizacao em blocos + timezone BRT + historico completo)
+  "ultima_atualizacao": "2026-05-20 01:35 BRT"
 }
