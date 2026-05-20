@@ -3,12 +3,15 @@ name: Sync Strava Coach
 on:
   schedule:
     # São Paulo (UTC-3) → converter para UTC
+    # Fórmula: UTC = BRT + 3 horas
+    
     # 09:00 BRT = 12:00 UTC
     - cron: '0 12 * * *'
-    # 14:00 BRT = 17:00 UTC
-    - cron: '0 17 * * *'
-    # 22:00 BRT (noite) = 01:00 UTC (próximo dia de UTC)
-    # ⚠️ CUIDADO: roda à meia-noite UTC = 21:00 BRT do dia anterior
+    
+    # 12:00 BRT = 15:00 UTC
+    - cron: '0 15 * * *'
+    
+    # 22:00 BRT = 01:00 UTC (próximo dia)
     - cron: '0 1 * * *'
   
   # Permitir trigger manual
