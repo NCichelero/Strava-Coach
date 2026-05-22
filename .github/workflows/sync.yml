@@ -5,9 +5,9 @@ on:
     # ⏰ HORÁRIOS DE SÃO PAULO (BRT = UTC-3)
     # Conversão: UTC = BRT + 3 horas
     
-    - cron: '0 12 * * *'   # 09:00 BRT ✓
-    - cron: '0 15 * * *'   # 12:00 BRT ✓
-    - cron: '0 1 * * *'    # 22:00 BRT (dia anterior) ✓
+    - cron: '0 10 * * *'   # 09:00 BRT ✓
+    - cron: '0 13 * * *'   # 12:00 BRT ✓
+    - cron: '0 23 * * *'    # 22:00 BRT (dia anterior) ✓
   
   workflow_dispatch:
 
