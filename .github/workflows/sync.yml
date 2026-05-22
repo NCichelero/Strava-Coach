@@ -1,50 +1,61 @@
-================================================================================
-🎯 NOVO CÓDIGO PARA GITHUB — HORÁRIOS CORRETOS (09:00 | 12:00 | 22:00 BRT)
-================================================================================
+name: Sync Strava Coach
 
-Arquivos gerados:
-  ⭐ sync_NOVO_DIRETO_GITHUB.yml      ← Copie este código
-  📖 INSTRUCOES_EDITAR_GITHUB.txt     ← Siga este guia
+on:
+  schedule:
+    # ⏰ HORÁRIOS DE SÃO PAULO (BRT = UTC-3)
+    # Conversão: UTC = BRT + 3 horas
+    
+    - cron: '0 12 * * *'   # 09:00 BRT ✓
+    - cron: '0 15 * * *'   # 12:00 BRT ✓
+    - cron: '0 1 * * *'    # 22:00 BRT (dia anterior) ✓
+  
+  workflow_dispatch:
 
-================================================================================
-⚡ 3 PASSOS PARA CORRIGIR
-================================================================================
+permissions:
+  contents: write
 
-1️⃣  Abra no navegador:
-    https://github.com/NCichelero/Strava-Coach/blob/main/.github/workflows/sync.yml
-
-2️⃣  Clique no ícone de edição (lápis)
-    → Ctrl+A (selecionar tudo)
-    → Delete (limpar)
-    → Cole o NOVO CÓDIGO
-
-3️⃣  Clique "Commit changes"
-    Mensagem: "Fix: crons para 09:00, 12:00 e 22:00 BRT"
-
-✓ PRONTO! Aguarde 1-2 minutos para GitHub sincronizar os crons.
-
-================================================================================
-⏰ HORÁRIOS CONFIGURADOS (FINAIS)
-================================================================================
-
-✓ 09:00 BRT (manhã)    ← cron: 0 12 * * *
-✓ 12:00 BRT (meio-dia) ← cron: 0 15 * * *
-✓ 22:00 BRT (noite)    ← cron: 0 1 * * *
-
-Conversão: UTC = BRT + 3 (São Paulo em UTC-3)
-
-================================================================================
-📁 TODOS OS ARQUIVOS GERADOS
-================================================================================
-
-Download disponível:
-
-1. dashboard_generator.py (v10.2)      ← ROLO vs RUA + BRT
-2. strava_coach.py                     ← Mantido
-3. sync_NOVO_DIRETO_GITHUB.yml         ← ⭐ USE ESTE
-4. INSTRUCOES_EDITAR_GITHUB.txt        ← Passo a passo
-5. Documentação completa               ← 4 arquivos
-
-Total: 7 arquivos | ~140 KB
-
-================================================================================
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - run: pip install requests
+      
+      - name: Create .env file
+        run: |
+          echo "CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }}" > .env
+          echo "INTERVALS_API_KEY=${{ secrets.INTERVALS_API_KEY }}" >> .env
+          echo "STRAVA_CLIENT_ID=${{ secrets.STRAVA_CLIENT_ID }}" >> .env
+          echo "STRAVA_CLIENT_SECRET=${{ secrets.STRAVA_CLIENT_SECRET }}" >> .env
+          echo "STRAVA_REFRESH_TOKEN=${{ secrets.STRAVA_REFRESH_TOKEN }}" >> .env
+      
+      - name: Run Strava Coach
+        run: python strava_coach.py
+      
+      - name: Generate Dashboard
+        run: python dashboard_generator.py
+      
+      - name: Commit and Push
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          
+          if git diff --staged --quiet; then
+            echo "ℹ️ Nenhuma mudança"
+          else
+            git commit -m "Auto-update: $(date -u +'%Y-%m-%d %H:%M UTC')"
+            git push
+          fi
+      
+      - name: Notify on Failure
+        if: failure()
+        run: echo "❌ Workflow falhou"
