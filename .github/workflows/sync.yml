@@ -7,7 +7,7 @@ on:
     
     - cron: '0 11 * * *'   # 09:00 BRT ✓
     - cron: '0 14 * * *'   # 12:00 BRT ✓
-    - cron: '0 00 * * *'    # 22:00 BRT (dia anterior) ✓
+    - cron: '0 0 * * *'    # 22:00 BRT (dia anterior) ✓
   
   workflow_dispatch:
 
