@@ -16,7 +16,7 @@ import statistics
 
 # v11.7: Analytics
 from analytics import gerar_analytics_completo
-from dashboard_cards_lite import build_aba_analytics, build_card_tss_bloco
+from dashboard_cards_lite import build_aba_analytics
 
 # ─── Configuração ──────────────────────────────────────────────────────────
 
@@ -1940,14 +1940,7 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     aba_cond += '</div>'
 
     # v11.7: Aba Analytics
-    aba_analytics = build_aba_analytics(
-        analytics_data,
-        distrib=distrib,
-        ctl=ctl,
-        atl=atl,
-        tss_meta_bloco=TSS_META_SEMANA,
-        alvo_str=bloco_info['distribuicao']
-    )
+    aba_analytics = build_aba_analytics(analytics_data)
     
     # v11.7: Gráficos e comparação
     card_comparacao = build_card_comparacao(analise, historico, treinos)
@@ -1962,7 +1955,6 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     
     atl_anterior = historico[-8]['atl'] if len(historico) > 7 else atl
     alerts_html = build_alerts(tsb, atl, ctl, atl_anterior)
-    card_tss_bloco = build_card_tss_bloco(analise['tss_realizado'], TSS_META_SEMANA)
 
     # ─── HTML completo ─────────────────────────────────────────────────────
     html = f'''<!DOCTYPE html>
@@ -2022,7 +2014,6 @@ body {{ font-family: 'DM Sans', -apple-system, sans-serif; background: #0a0a0a; 
 {cards_analise}
 {alerts_html}
 {card_hoje}
-{card_tss_bloco}
 {card_readiness}
 {card_comparacao}
 {cards_vo2}
