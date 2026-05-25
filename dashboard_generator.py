@@ -834,6 +834,44 @@ def calcular_wellness_historico(treinos):
 
 # ─── Análise Semana Atual ──────────────────────────────────────────────────
 
+def analisar_semana_passada(treinos, plano):
+    """Igual analisar_semana_atual mas para a semana anterior"""
+    hoje = agora()
+    seg_passada = hoje - timedelta(days=hoje.weekday() + 7)
+    seg_passada = seg_passada.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    realizados_por_dia = defaultdict(list)
+    for t in treinos.values():
+        data = t.get('data', '')
+        if not data: continue
+        try:
+            dt = datetime.strptime(data, '%Y-%m-%d')
+            if dt >= seg_passada and dt < seg_passada + timedelta(days=7):
+                realizados_por_dia[dt.weekday()].append(t)
+        except: continue
+
+    treinos_planejados_cic = 0
+    treinos_perdidos = 0
+    treinos_feitos = 0
+
+    for wd in range(7):
+        plan = plano[wd]
+        realizados = realizados_por_dia.get(wd, [])
+        if plan['tipo'] == 'ciclismo':
+            treinos_planejados_cic += 1
+            if realizados:
+                cats_real = [t.get('categoria') for t in realizados]
+                if plan['tipo'] in cats_real:
+                    treinos_feitos += 1
+                else:
+                    treinos_perdidos += 1
+            else:
+                treinos_perdidos += 1
+
+    aderencia_pct = round((treinos_feitos / max(treinos_planejados_cic, 1)) * 100)
+    return {'aderencia_pct': aderencia_pct, 'treinos_perdidos': treinos_perdidos}
+
+
 def analisar_semana_atual(treinos, plano):
     hoje = agora()
     seg_atual = hoje - timedelta(days=hoje.weekday())
@@ -1287,72 +1325,61 @@ def build_dia_proxima(wd, plan):
 
 # ─── Build Card Comparação Periódica ─────────────────────────────────────
 
-def build_card_comparacao(analise, historico):
+def build_card_comparacao(analise, historico, treinos={}):
     """Compara esta semana vs semana passada vs média 4 semanas"""
+    from datetime import datetime, timedelta
     
-    # Esta semana (dados de analise)
-    tss_atual = analise.get('tss_pct', 0)
-    dist_atual = sum([t.get('dist', 0) for t in analise['dias']])
-    horas_atual = sum([t.get('plano', {}).get('dur_total', 0) for t in analise['dias']]) / 60
+    hoje = datetime.now()
+    seg_atual = hoje - timedelta(days=hoje.weekday())
     
-    # Semana passada (historico[-7:])
-    if len(historico) > 7:
-        tss_passada = historico[-8]['tss'] if historico[-8] else 0
-        dist_passada = historico[-8].get('dist', 0)
-        horas_passada = historico[-8].get('horas', 0)
-    else:
-        tss_passada = tss_atual
-        dist_passada = dist_atual
-        horas_passada = horas_atual
+    def semana_stats(seg_ref):
+        dom_ref = seg_ref + timedelta(days=6)
+        tss = dist = mins = 0
+        for t in treinos.values():
+            try:
+                dt = datetime.strptime(t.get('data', ''), '%Y-%m-%d')
+                if seg_ref.date() <= dt.date() <= dom_ref.date():
+                    tss  += t.get('tss', 0)
+                    dist += t.get('dist', 0)
+                    mins += t.get('tempo', 0)
+            except:
+                pass
+        return round(tss, 1), round(dist, 1), round(mins / 60, 1)
     
-    # Média 4 semanas
-    if len(historico) > 28:
-        tss_media = sum([h.get('tss', 0) for h in historico[-28:]]) / 4
-        dist_media = sum([h.get('dist', 0) for h in historico[-28:]]) / 4
-        horas_media = sum([h.get('horas', 0) for h in historico[-28:]]) / 4
-    else:
-        tss_media = tss_atual
-        dist_media = dist_atual
-        horas_media = horas_atual
+    tss_a, dist_a, h_a = semana_stats(seg_atual)
+    tss_p, dist_p, h_p = semana_stats(seg_atual - timedelta(days=7))
     
-    # Calcular deltas
-    delta_tss = ((tss_atual - tss_passada) / max(tss_passada, 1)) * 100 if tss_passada else 0
-    delta_dist = ((dist_atual - dist_passada) / max(dist_passada, 1)) * 100 if dist_passada else 0
-    delta_horas = ((horas_atual - horas_passada) / max(horas_passada, 1)) * 100 if horas_passada else 0
+    medias = [semana_stats(seg_atual - timedelta(days=7*i)) for i in range(1, 5)]
+    tss_m  = round(sum(m[0] for m in medias) / 4, 1)
+    dist_m = round(sum(m[1] for m in medias) / 4, 1)
+    h_m    = round(sum(m[2] for m in medias) / 4, 1)
     
-    def cor_delta(val):
-        if val > 10: return '#4ade80'  # verde
-        elif val > 0: return '#facc15'  # amarelo
-        else: return '#f87171'  # vermelho
+    def cor(a, b):
+        if not b: return '#888'
+        return '#4ade80' if a >= b else '#f87171'
     
-    h = '<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:14px;border-left:3px solid #3b82f6;">'
+    def pct(a, b):
+        if not b: return '+0%'
+        return f'{((a-b)/b*100):+.0f}%'
+    
+    h  = '<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:14px;border-left:3px solid #3b82f6;">'
     h += '<div style="font-size:12px;color:#3b82f6;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">📊 Comparação Periódica</div>'
     h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:10px;">'
     
-    # TSS
-    h += f'<div style="background:#1a1a1a;padding:8px;border-radius:6px;"><div style="color:#888;margin-bottom:4px;">TSS</div>'
-    h += f'<div style="font-weight:700;color:#fff;font-size:12px;">{tss_atual:.0f}</div>'
-    h += f'<div style="font-size:9px;color:{cor_delta(delta_tss)};margin-top:2px;">vs semana: {delta_tss:+.0f}%</div>'
-    h += f'<div style="font-size:9px;color:#888;margin-top:1px;">Média: {tss_media:.0f}</div>'
-    h += f'</div>'
-    
-    # Distância
-    h += f'<div style="background:#1a1a1a;padding:8px;border-radius:6px;"><div style="color:#888;margin-bottom:4px;">DISTÂNCIA</div>'
-    h += f'<div style="font-weight:700;color:#fff;font-size:12px;">{dist_atual:.0f}km</div>'
-    h += f'<div style="font-size:9px;color:{cor_delta(delta_dist)};margin-top:2px;">vs semana: {delta_dist:+.0f}%</div>'
-    h += f'<div style="font-size:9px;color:#888;margin-top:1px;">Média: {dist_media:.0f}km</div>'
-    h += f'</div>'
-    
-    # Horas
-    h += f'<div style="background:#1a1a1a;padding:8px;border-radius:6px;"><div style="color:#888;margin-bottom:4px;">HORAS</div>'
-    h += f'<div style="font-weight:700;color:#fff;font-size:12px;">{horas_atual:.1f}h</div>'
-    h += f'<div style="font-size:9px;color:{cor_delta(delta_horas)};margin-top:2px;">vs semana: {delta_horas:+.0f}%</div>'
-    h += f'<div style="font-size:9px;color:#888;margin-top:1px;">Média: {horas_media:.1f}h</div>'
-    h += f'</div>'
+    for label, atual, passada, media, un in [
+        ('TSS',       tss_a, tss_p, tss_m, ''),
+        ('DISTÂNCIA', dist_a, dist_p, dist_m, 'km'),
+        ('HORAS',     h_a, h_p, h_m, 'h'),
+    ]:
+        h += f'<div style="background:#1a1a1a;padding:8px;border-radius:6px;">'
+        h += f'<div style="color:#888;margin-bottom:4px;">{label}</div>'
+        h += f'<div style="font-weight:700;color:#fff;font-size:13px;">{atual}{un}</div>'
+        h += f'<div style="font-size:9px;color:{cor(atual,passada)};margin-top:2px;">vs semana: {pct(atual,passada)}</div>'
+        h += f'<div style="font-size:9px;color:#888;margin-top:1px;">Média 4sem: {media}{un}</div>'
+        h += '</div>'
     
     h += '</div></div>'
     return h
-
 
 
 def build_card_hoje(analise, sups_dict, plano_proxima=None):
@@ -1846,7 +1873,7 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     aba_analytics = build_aba_analytics(analytics_data)
     
     # v11.7: Gráficos e comparação
-    card_comparacao = build_card_comparacao(analise, historico)
+    card_comparacao = build_card_comparacao(analise, historico, treinos)
     grafico_ctl_atl = build_grafico_ctl_atl_tsb(historico)
     grafico_power = build_grafico_power_curve(analytics_data)
     grafico_zonas = build_grafico_distribuicao_zonas(distrib)
@@ -2038,13 +2065,14 @@ def main():
         print(f"📚 Iniciando: Bloco BASE, semana 1/4")
         save_estado(estado)
     elif estado.get('semana_referencia') != seg_atual_str:
-        # Nova semana — avança periodização
+        # Nova semana — avança periodização com base na semana que TERMINOU
         print(f"📅 Nova semana detectada ({seg_atual_str})")
         historico = calcular_wellness_historico(treinos)
         ultimo = [h for h in historico if not h.get('forecast')][-1]
         tsb_atual = ultimo['tsb']
         plano_anterior = gerar_plano_semana_bloco(estado['bloco_atual'], estado['semana_no_bloco'])
-        analise_anterior = analisar_semana_atual(treinos, plano_anterior)
+        # CORREÇÃO: analisar semana passada (não a atual que está começando)
+        analise_anterior = analisar_semana_passada(treinos, plano_anterior)
         novo_bloco, nova_semana, _, _ = proxima_semana_periodizacao(
             estado, tsb_atual, analise_anterior['aderencia_pct'], analise_anterior['treinos_perdidos']
         )
