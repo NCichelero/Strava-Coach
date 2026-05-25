@@ -1409,9 +1409,9 @@ def build_card_comparacao(analise, historico, treinos={}):
             try:
                 dt = datetime.strptime(t.get('data', ''), '%Y-%m-%d')
                 if seg_ref.date() <= dt.date() <= dom_ref.date():
-                    tss  += t.get('tss', 0)
-                    dist += t.get('dist', 0)
-                    mins += t.get('tempo', 0)
+                    tss  += tss_treino(t)
+                    dist += t.get('distancia_km', 0)
+                    mins += t.get('duracao_min', 0)
             except:
                 pass
         return round(tss, 1), round(dist, 1), round(mins / 60, 1)
