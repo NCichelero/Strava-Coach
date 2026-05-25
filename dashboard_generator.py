@@ -961,7 +961,7 @@ def proxima_semana_periodizacao(estado, tsb, aderencia_pct, treinos_perdidos):
         if prox_semana == 4:
             razoes.append(f'✅ Semana de recovery planejada (final do bloco {BLOCOS[prox_bloco]["nome"]})')
         else:
-            razoes.append(f'📈 Progredindo no bloco {BLOCOS[prox_bloco]["nome"]} (semana {prox_semana}/3)')
+            razoes.append(f'📈 Progredindo no bloco {BLOCOS[prox_bloco]["nome"]} (semana {prox_semana}/4)')
 
     return prox_bloco, prox_semana, razoes, forcou_recovery
 
@@ -969,27 +969,34 @@ def proxima_semana_periodizacao(estado, tsb, aderencia_pct, treinos_perdidos):
 # ─── Suplementação ─────────────────────────────────────────────────────────
 
 def calcular_suplementacao(dur_min):
-    if dur_min < 60: return ['Água + sal']
-    eventos = ['⏱️ -30min: 1 fatia pão + doce de leite + banana (~50g carb)']
-    if dur_min < 90:
-        eventos.append('⏱️ 30min: 1 bananinha (36g) + 500ml água')
+    """Retorna apenas carboidrato, água e sódio necessários"""
+    if dur_min < 60:
+        return {
+            'carbo_g': 0,
+            'agua_ml': 400,
+            'sodio_mg': 200
+        }
+    elif dur_min < 90:
+        return {
+            'carbo_g': 50,  # Pré: ~50g
+            'agua_ml': 600,  # Durante: 500ml
+            'sodio_mg': 300
+        }
     elif dur_min < 150:
-        eventos += [
-            '⏱️ 30min: 1 bananinha (36g) + 500ml água',
-            '⏱️ 60min: 30g carbo 2:1 em 500ml',
-            '⏱️ 90min: 1 bananinha (36g)',
-        ]
-    else:
-        eventos += [
-            '⏱️ 30min: 1 bananinha (36g) + 500ml água',
-            '⏱️ 60min: 1 bananinha (36g) + 500ml água',
-            '⏱️ 90min: 40g carbo 2:1 em 500ml',
-            '⏱️ 120min: 1 bananinha (36g) + 500ml água',
-            '⏱️ 150min: 40g carbo 2:1 em 500ml',
-        ]
-        if dur_min >= 180: eventos.append('⏱️ 180min: 1 bananinha (36g)')
-    eventos.append('⏱️ Pós (até 30min): Whey + banana + pão de queijo')
-    return eventos
+        return {
+            'carbo_g': 100,  # Pré: 50g + Durante: 30g + 30g
+            'agua_ml': 1200,  # 500ml + 500ml + 200ml
+            'sodio_mg': 500
+        }
+    else:  # >= 150min
+        carbo = 50 + (60 * ((dur_min - 90) // 30))  # Dinâmico por duração
+        agua = 600 + (500 * ((dur_min - 90) // 30))
+        sodio = 600 if dur_min < 180 else 800
+        return {
+            'carbo_g': carbo,
+            'agua_ml': agua,
+            'sodio_mg': sodio
+        }
 
 # ─── Distribuição zonas ────────────────────────────────────────────────────
 
@@ -1224,8 +1231,12 @@ def build_dia_semana_atual(dia_info, idx):
         if is_hoje and cat == 'ciclismo':
             sups = calcular_suplementacao(plan['dur_total'])
             h += '<div style="margin-top:12px;padding:10px;background:#1a1a1a;border-radius:6px;border-left:3px solid #fbbf24;">'
-            h += '<div style="font-size:11px;color:#fbbf24;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">🍌 Suplementação</div>'
-            for e in sups: h += f'<div style="font-size:11px;color:#ddd;padding:4px 0;">{e}</div>'
+            h += '<div style="font-size:11px;color:#fbbf24;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">⚡ Nutrição Necessária</div>'
+            h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:11px;">'
+            h += f'<div><div style="color:#888;font-size:9px;">CARBOIDRATO</div><div style="color:#facc15;font-weight:700;font-size:14px;">{sups["carbo_g"]}g</div></div>'
+            h += f'<div><div style="color:#888;font-size:9px;">ÁGUA</div><div style="color:#3b82f6;font-weight:700;font-size:14px;">{sups["agua_ml"]}ml</div></div>'
+            h += f'<div><div style="color:#888;font-size:9px;">SÓDIO</div><div style="color:#ec4899;font-weight:700;font-size:14px;">{sups["sodio_mg"]}mg</div></div>'
+            h += '</div>'
             h += '</div>'
     elif cat == 'academia' and not realizados:
         for b in plan['blocos']:
@@ -1253,8 +1264,12 @@ def build_dia_proxima(wd, plan):
             h += build_bloco_treino(b)
         sups = calcular_suplementacao(plan['dur_total'])
         h += '<div style="margin-top:12px;padding:10px;background:#1a1a1a;border-radius:6px;border-left:3px solid #fbbf24;">'
-        h += '<div style="font-size:11px;color:#fbbf24;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">🍌 Suplementação</div>'
-        for e in sups: h += f'<div style="font-size:11px;color:#ddd;padding:4px 0;">{e}</div>'
+        h += '<div style="font-size:11px;color:#fbbf24;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">⚡ Nutrição Necessária</div>'
+        h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:11px;">'
+        h += f'<div><div style="color:#888;font-size:9px;">CARBOIDRATO</div><div style="color:#facc15;font-weight:700;font-size:14px;">{sups["carbo_g"]}g</div></div>'
+        h += f'<div><div style="color:#888;font-size:9px;">ÁGUA</div><div style="color:#3b82f6;font-weight:700;font-size:14px;">{sups["agua_ml"]}ml</div></div>'
+        h += f'<div><div style="color:#888;font-size:9px;">SÓDIO</div><div style="color:#ec4899;font-weight:700;font-size:14px;">{sups["sodio_mg"]}mg</div></div>'
+        h += '</div>'
         h += '</div>'
     else:
         for b in plan['blocos']:
@@ -1266,6 +1281,304 @@ def build_dia_proxima(wd, plan):
     return h
 
 # ─── Build Dashboard ───────────────────────────────────────────────────────
+
+
+
+
+# ─── Build Card Comparação Periódica ─────────────────────────────────────
+
+def build_card_comparacao(analise, historico):
+    """Compara esta semana vs semana passada vs média 4 semanas"""
+    
+    # Esta semana (dados de analise)
+    tss_atual = analise.get('tss_pct', 0)
+    dist_atual = sum([t.get('dist', 0) for t in analise['dias']])
+    horas_atual = sum([t.get('plano', {}).get('dur_total', 0) for t in analise['dias']]) / 60
+    
+    # Semana passada (historico[-7:])
+    if len(historico) > 7:
+        tss_passada = historico[-8]['tss'] if historico[-8] else 0
+        dist_passada = historico[-8].get('dist', 0)
+        horas_passada = historico[-8].get('horas', 0)
+    else:
+        tss_passada = tss_atual
+        dist_passada = dist_atual
+        horas_passada = horas_atual
+    
+    # Média 4 semanas
+    if len(historico) > 28:
+        tss_media = sum([h.get('tss', 0) for h in historico[-28:]]) / 4
+        dist_media = sum([h.get('dist', 0) for h in historico[-28:]]) / 4
+        horas_media = sum([h.get('horas', 0) for h in historico[-28:]]) / 4
+    else:
+        tss_media = tss_atual
+        dist_media = dist_atual
+        horas_media = horas_atual
+    
+    # Calcular deltas
+    delta_tss = ((tss_atual - tss_passada) / max(tss_passada, 1)) * 100 if tss_passada else 0
+    delta_dist = ((dist_atual - dist_passada) / max(dist_passada, 1)) * 100 if dist_passada else 0
+    delta_horas = ((horas_atual - horas_passada) / max(horas_passada, 1)) * 100 if horas_passada else 0
+    
+    def cor_delta(val):
+        if val > 10: return '#4ade80'  # verde
+        elif val > 0: return '#facc15'  # amarelo
+        else: return '#f87171'  # vermelho
+    
+    h = '<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:14px;border-left:3px solid #3b82f6;">'
+    h += '<div style="font-size:12px;color:#3b82f6;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:1px;">📊 Comparação Periódica</div>'
+    h += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:10px;">'
+    
+    # TSS
+    h += f'<div style="background:#1a1a1a;padding:8px;border-radius:6px;"><div style="color:#888;margin-bottom:4px;">TSS</div>'
+    h += f'<div style="font-weight:700;color:#fff;font-size:12px;">{tss_atual:.0f}</div>'
+    h += f'<div style="font-size:9px;color:{cor_delta(delta_tss)};margin-top:2px;">vs semana: {delta_tss:+.0f}%</div>'
+    h += f'<div style="font-size:9px;color:#888;margin-top:1px;">Média: {tss_media:.0f}</div>'
+    h += f'</div>'
+    
+    # Distância
+    h += f'<div style="background:#1a1a1a;padding:8px;border-radius:6px;"><div style="color:#888;margin-bottom:4px;">DISTÂNCIA</div>'
+    h += f'<div style="font-weight:700;color:#fff;font-size:12px;">{dist_atual:.0f}km</div>'
+    h += f'<div style="font-size:9px;color:{cor_delta(delta_dist)};margin-top:2px;">vs semana: {delta_dist:+.0f}%</div>'
+    h += f'<div style="font-size:9px;color:#888;margin-top:1px;">Média: {dist_media:.0f}km</div>'
+    h += f'</div>'
+    
+    # Horas
+    h += f'<div style="background:#1a1a1a;padding:8px;border-radius:6px;"><div style="color:#888;margin-bottom:4px;">HORAS</div>'
+    h += f'<div style="font-weight:700;color:#fff;font-size:12px;">{horas_atual:.1f}h</div>'
+    h += f'<div style="font-size:9px;color:{cor_delta(delta_horas)};margin-top:2px;">vs semana: {delta_horas:+.0f}%</div>'
+    h += f'<div style="font-size:9px;color:#888;margin-top:1px;">Média: {horas_media:.1f}h</div>'
+    h += f'</div>'
+    
+    h += '</div></div>'
+    return h
+
+
+
+def build_card_hoje(analise, sups_dict, plano_proxima=None):
+    """Card rápido: treino de hoje + próximo (pode estar na próxima semana)"""
+    hoje = None
+    proximo = None
+    
+    # Verificar se analise tem 'dias'
+    if 'dias' not in analise or not analise['dias']:
+        return '<div style="background:linear-gradient(135deg,#3b82f6,#1e40af);padding:16px;border-radius:10px;margin-bottom:14px;color:white;"><div style="font-size:12px;opacity:0.8;">⏰ Sem dados</div></div>'
+    
+    dias = analise['dias']
+    encontrou_hoje = False
+    
+    # Procurar hoje
+    for i, dia in enumerate(dias):
+        if dia.get('is_hoje'):
+            hoje = dia
+            encontrou_hoje = True
+            # Próximo é o dia logo depois
+            if i + 1 < len(dias):
+                proximo = dias[i + 1]
+            break
+    
+    # Se não encontrou próximo na semana atual, pegar da próxima semana
+    if not proximo and plano_proxima and encontrou_hoje:
+        # próximo é o primeiro dia da próxima semana
+        for wd, plano in plano_proxima.items():
+            if plano.get('nome'):  # Verificar que tem plano válido
+                proximo = {'plano': plano}
+                break
+    
+    h = '<div style="background:linear-gradient(135deg,#3b82f6,#1e40af);padding:16px;border-radius:10px;margin-bottom:14px;color:white;">'
+    h += '<div style="font-size:12px;opacity:0.8;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;font-weight:600;">⏰ Hoje</div>'
+    
+    if hoje:
+        plan = hoje.get('plano', {})
+        h += f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">'
+        h += f'<div><div style="font-size:14px;font-weight:700;">{plan.get("nome", "Treino")}</div>'
+        h += f'<div style="font-size:11px;opacity:0.8;">{plan.get("horario", "--")} · {plan.get("dur_total", 0)}min</div></div>'
+        h += f'<div style="text-align:right;font-size:11px;"><strong>TSS</strong> {plan.get("tss_alvo", 0)}</div>'
+        h += f'</div>'
+        
+        if plan.get('tipo') == 'ciclismo' and sups_dict:
+            h += f'<div style="background:rgba(255,255,255,0.1);padding:8px;border-radius:6px;margin-bottom:8px;font-size:10px;">'
+            h += f'<strong>Nutrição:</strong> {sups_dict.get("carbo_g", 0)}g carbo · {sups_dict.get("agua_ml", 0)}ml água · {sups_dict.get("sodio_mg", 0)}mg sódio'
+            h += f'</div>'
+    else:
+        h += '<div style="font-size:12px;color:#ddd;">Nenhum treino hoje</div>'
+    
+    # PRÓXIMO TREINO
+    if proximo:
+        plan_prox = proximo.get('plano', {})
+        h += f'<div style="margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,0.2);font-size:11px;">'
+        h += f'<div style="opacity:0.8;margin-bottom:4px;">👉 Próximo:</div>'
+        h += f'<div style="font-weight:700;">{plan_prox.get("nome", "Treino")} ({plan_prox.get("horario", "--")})</div>'
+        h += f'<div style="opacity:0.7;font-size:10px;margin-top:2px;">TSS {plan_prox.get("tss_alvo", 0)} · {plan_prox.get("dur_total", 0)}min</div>'
+        h += f'</div>'
+    
+    h += '</div>'
+    return h
+
+# ─── Build Alerts ────────────────────────────────────────────────────────────
+
+def build_alerts(tsb, atl, ctl, atl_anterior=None):
+    """Retorna cards de alerta baseado em escala Intervals.icu"""
+    alerts = []
+    
+    # Escala Intervals.icu:
+    # +20 e acima: Adaptando (amarelo)
+    # +6 até +20: Descansando (verde claro)
+    # -10 até +5: Mantendo (verde)
+    # -30 até -11: Evoluindo (azul)
+    # -31 e abaixo: Alto Risco (vermelho)
+    
+    if tsb <= -31:
+        alerts.append(('🚨 ALTO RISCO', 'TSB muito baixo. Recuperação urgente.', '#f87171'))
+    elif -30 <= tsb <= -11:
+        # Zona de evolução - informativo apenas
+        pass
+    elif -10 <= tsb <= 5:
+        # Zona de manutenção - normal
+        pass
+    elif 6 <= tsb <= 20:
+        # Zona de descanso - informativo
+        pass
+    elif tsb >= 21:
+        alerts.append(('⚡ ADAPTANDO', 'TSB elevado. Corpo se adaptando à carga.', '#fbbf24'))
+    
+    if atl_anterior and atl > atl_anterior * 1.15:
+        alerts.append(('📈 ATL CRESCENDO', 'Fadiga acumulada aumentando. Monitore.', '#fb923c'))
+    
+    if not alerts:
+        return ''
+    
+    h = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px;margin-bottom:14px;">'
+    
+    for icon_status, msg, cor in alerts:
+        h += f'<div style="background:{cor}22;padding:12px;border-radius:8px;border-left:3px solid {cor};">'
+        h += f'<div style="color:{cor};font-weight:700;font-size:12px;margin-bottom:4px;">{icon_status}</div>'
+        h += f'<div style="color:#ddd;font-size:11px;">{msg}</div>'
+        h += f'</div>'
+    
+    h += '</div>'
+    return h
+
+# ─── Build Gráficos ────────────────────────────────────────────────────────────
+
+def build_grafico_ctl_atl_tsb(historico):
+    """Gera chart.js para CTL/ATL/TSB últimos 30 dias"""
+    if not historico or len(historico) < 7:
+        return ''
+    
+    # Pegar últimos 30 dias (ou menos se não tiver)
+    dados = historico[-30:]
+    
+    labels = [f"D{i}" for i in range(len(dados))]
+    ctl_vals = [d.get('ctl', 0) for d in dados]
+    atl_vals = [d.get('atl', 0) for d in dados]
+    tsb_vals = [d.get('tsb', 0) for d in dados]
+    
+    js = f'''
+    <div style="background:#0a0a0a;padding:12px;border-radius:8px;margin-bottom:12px;">
+    <canvas id="chart_ctl_atl" height="80"></canvas>
+    <script>
+    new Chart(document.getElementById('chart_ctl_atl'), {{
+        type: 'line',
+        data: {{
+            labels: {labels},
+            datasets: [
+                {{label: 'CTL', data: {ctl_vals}, borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0.1)', tension: 0.3}},
+                {{label: 'ATL', data: {atl_vals}, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.1)', tension: 0.3}},
+                {{label: 'TSB', data: {tsb_vals}, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.1)', tension: 0.3}}
+            ]
+        }},
+        options: {{
+            responsive: true,
+            maintainAspectRatio: true,
+            plugins: {{legend: {{display: true, position: 'top'}}}},
+            scales: {{y: {{beginAtZero: false, grid: {{color: '#333'}}}}, x: {{grid: {{color: '#333'}}}}}}
+        }}
+    }});
+    </script>
+    </div>
+    '''
+    return js
+
+def build_grafico_power_curve(analytics_data):
+    """Gera chart.js para Power Curve"""
+    if 'power_curve' not in analytics_data:
+        return ''
+    
+    pc = analytics_data['power_curve']
+    labels = ['5s', '1min', '5min', '20min', '60min']
+    valores = [
+        pc.get('pico_5s', 0),
+        pc.get('pico_1min', 0),
+        pc.get('pico_5min', 0),
+        pc.get('pico_20min', 0),
+        pc.get('pico_60min', 0)
+    ]
+    
+    js = f'''
+    <div style="background:#0a0a0a;padding:12px;border-radius:8px;margin-bottom:12px;">
+    <canvas id="chart_power_curve" height="60"></canvas>
+    <script>
+    new Chart(document.getElementById('chart_power_curve'), {{
+        type: 'bar',
+        data: {{
+            labels: {labels},
+            datasets: [{{
+                label: 'Watts',
+                data: {valores},
+                backgroundColor: ['#fbbf24', '#f97316', '#ef4444', '#ec4899', '#a855f7'],
+                borderRadius: 6
+            }}]
+        }},
+        options: {{
+            responsive: true,
+            maintainAspectRatio: true,
+            indexAxis: 'x',
+            plugins: {{legend: {{display: false}}}},
+            scales: {{y: {{beginAtZero: true, grid: {{color: '#333'}}}}, x: {{grid: {{color: '#333'}}}}}}
+        }}
+    }});
+    </script>
+    </div>
+    '''
+    return js
+
+def build_grafico_distribuicao_zonas(distrib):
+    """Gera chart.js pie para distribuição de zonas"""
+    if not distrib:
+        return ''
+    
+    labels = ['Z1', 'Z2', 'Z3', 'Z4', 'Z5']
+    valores = [
+        distrib.get('z1_pct', 0),
+        distrib.get('z2_pct', 0),
+        distrib.get('z3_pct', 0),
+        distrib.get('z4_pct', 0),
+        distrib.get('z5_pct', 0)
+    ]
+    
+    js = f'''
+    <div style="background:#0a0a0a;padding:12px;border-radius:8px;margin-bottom:12px;max-width:300px;">
+    <canvas id="chart_zonas" height="80"></canvas>
+    <script>
+    new Chart(document.getElementById('chart_zonas'), {{
+        type: 'doughnut',
+        data: {{
+            labels: {labels},
+            datasets: [{{
+                data: {valores},
+                backgroundColor: ['#6b7280', '#10b981', '#f59e0b', '#ef4444', '#a21caf']
+            }}]
+        }},
+        options: {{
+            responsive: true,
+            plugins: {{legend: {{position: 'right'}}}}
+        }}
+    }});
+    </script>
+    </div>
+    '''
+    return js
 
 def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     treinos_list = sorted(treinos.values(), key=lambda x: x.get('data', ''), reverse=True)
@@ -1290,10 +1603,17 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     ultimo = ultimos_reais[-1] if ultimos_reais else {'ctl': 36, 'atl': 54, 'tsb': -18, 'tss': 0}
     ctl, atl, tsb = ultimo['ctl'], ultimo['atl'], ultimo['tsb']
 
-    if tsb < -30: cor_tsb = '#f87171'
-    elif tsb < -10: cor_tsb = '#fbbf24'
-    elif tsb < 5: cor_tsb = '#9ca3af'
-    else: cor_tsb = '#4ade80'
+    # Escala TSB Intervals.icu
+    if tsb <= -31:
+        cor_tsb = '#f87171'  # Alto Risco (vermelho)
+    elif -30 <= tsb <= -11:
+        cor_tsb = '#3b82f6'  # Evoluindo (azul)
+    elif -10 <= tsb <= 5:
+        cor_tsb = '#4ade80'  # Mantendo (verde)
+    elif 6 <= tsb <= 20:
+        cor_tsb = '#86efac'  # Descansando (verde claro)
+    else:  # tsb >= 21
+        cor_tsb = '#fbbf24'  # Adaptando (amarelo)
 
     # Próxima semana (com periodização)
     prox_bloco, prox_semana, razoes_prox, forcou_rec = proxima_semana_periodizacao(
@@ -1303,7 +1623,7 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     bloco_prox_info = BLOCOS[prox_bloco]
 
     # ─── Cards superiores ──────────────────────────────────────────────────
-    cards_analise = '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:14px;">'
+    cards_analise = f'<div style="display:grid;grid-template-columns:{"1fr 1fr 1fr" if ftp_gap and sem_220 else "1fr 1fr"};gap:12px;margin-bottom:14px;">'
     ctl_pct = min(round((ctl / META_CTL) * 100), 100)
     if ftp_gap and sem_220:
         cards_analise += f'''<div style="background:linear-gradient(135deg,#3b82f6,#1e40af);padding:16px;border-radius:10px;color:white;">
@@ -1524,6 +1844,19 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
 
     # v11.7: Aba Analytics
     aba_analytics = build_aba_analytics(analytics_data)
+    
+    # v11.7: Gráficos e comparação
+    card_comparacao = build_card_comparacao(analise, historico)
+    grafico_ctl_atl = build_grafico_ctl_atl_tsb(historico)
+    grafico_power = build_grafico_power_curve(analytics_data)
+    grafico_zonas = build_grafico_distribuicao_zonas(distrib)
+
+    # v11.7: Cards hoje + alerts
+    hoje_sups = calcular_suplementacao(analise['dias'][-1]['plano']['dur_total'] if analise['dias'] else 0)
+    card_hoje = build_card_hoje(analise, hoje_sups, plano_proxima)
+    
+    atl_anterior = historico[-8]['atl'] if len(historico) > 7 else atl
+    alerts_html = build_alerts(tsb, atl, ctl, atl_anterior)
 
     # ─── HTML completo ─────────────────────────────────────────────────────
     html = f'''<!DOCTYPE html>
@@ -1581,6 +1914,9 @@ body {{ font-family: 'DM Sans', -apple-system, sans-serif; background: #0a0a0a; 
 </div>
 
 {cards_analise}
+{alerts_html}
+{card_hoje}
+{card_comparacao}
 {cards_vo2}
 {header_period}
 
@@ -1595,7 +1931,7 @@ body {{ font-family: 'DM Sans', -apple-system, sans-serif; background: #0a0a0a; 
 <div id="atual" class="tab-content active">{aba_atual}</div>
 <div id="proxima" class="tab-content">{aba_prox}</div>
 <div id="historico" class="tab-content">{aba_hist}</div>
-<div id="condicionamento" class="tab-content">{aba_cond}</div>
+<div id="condicionamento" class="tab-content">{grafico_ctl_atl}{aba_cond}</div>
 <div id="analytics" class="tab-content">{aba_analytics}</div>
 
 </div>
