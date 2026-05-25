@@ -1,0 +1,10 @@
+{
+  "tss_meta_semana": 350,
+  "dias_off_planejados": [
+    "2026-05-26",
+    "2026-05-29",
+    "2026-05-30",
+    "2026-05-31"
+  ],
+  "_obs": "Adicione datas YYYY-MM-DD em dias_off_planejados para não contar como treino perdido. tss_meta_semana pode ser ajustado por semana editando este arquivo."
+}
