@@ -1,10 +1,11 @@
 """
-🎨 DASHBOARD GENERATOR v10.1
+🎨 DASHBOARD GENERATOR v11.7
 - Timezone São Paulo (UTC-3) fixo
 - Histórico inclui semana atual também
 - Periodização em blocos (BASE → THRESHOLD → VO2MAX → INTEGRAÇÃO)
 - Treinos específicos com nomes técnicos
 - Microciclos 3+1 (3 build + 1 recovery)
+- v11.7: Analytics avançado (Power Curve, Decoupling, Forecast, Teste FTP)
 """
 
 import json
@@ -12,6 +13,10 @@ import os
 from datetime import datetime, timedelta, timezone
 from collections import defaultdict
 import statistics
+
+# v11.7: Analytics
+from analytics import gerar_analytics_completo
+from dashboard_cards_lite import build_aba_analytics
 
 # ─── Configuração ──────────────────────────────────────────────────────────
 
@@ -679,7 +684,12 @@ def load_data():
     if os.path.exists('data/estado.json'):
         with open('data/estado.json', 'r', encoding='utf-8') as f:
             estado = json.load(f)
-    return treinos, wellness, fitness, estado
+    
+    # v11.7: Gerar analytics
+    print("📊 Gerando analytics...")
+    analytics_data = gerar_analytics_completo()
+    
+    return treinos, wellness, fitness, estado, analytics_data
 
 def save_estado(estado):
     os.makedirs('data', exist_ok=True)
@@ -1046,26 +1056,6 @@ def prever_ftp(treinos):
 
 # ─── Helpers UI ────────────────────────────────────────────────────────────
 
-# ─── ROLO vs RUA ──────────────────────────────────────────────────────────
-
-def recomendar_local(nome_treino):
-    """Recomenda ROLO ou RUA baseado no tipo de treino"""
-    nome_lower = nome_treino.lower()
-    
-    # ROLO MELHOR (intervalados — precisão é crítica)
-    rolo_melhor = ['threshold', 'vo2max', '30/30', 'billat', 'rønnestad', 'sweet spot', 'ss ',
-                   'criss', 'over-under', 'interval', 'test', 'teste', 'ftp', 'sprint', 'bossi']
-    
-    # RUA INDIFERENTE (long rides, endurance — psicológico importa)
-    rua_ok = ['long', 'longo', 'endurance', 'z2', 'recovery', 'spin', '☘️', 'race sim']
-    
-    if any(k in nome_lower for k in rolo_melhor):
-        return 'ROLO', '🏠', '#3b82f6', 'Melhor no rolo (precisão controlada)'
-    elif any(k in nome_lower for k in rua_ok):
-        return 'RUA', '🚴', '#10b981', 'Rua OK (treino psicológico)'
-    else:
-        return 'AMBOS', '↔️', '#fbbf24', 'Rua ou rolo (indiferente)'
-
 def watts_pct(pmin, pmax): return f"{int(FTP * pmin)}-{int(FTP * pmax)}W"
 def fc_zona_str(z):
     if z in ZONAS_FC:
@@ -1195,9 +1185,6 @@ def build_dia_semana_atual(dia_info, idx):
     h += f'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
     h += f'<span style="font-size:10px;color:{cor_status};font-weight:600;padding:3px 8px;background:{cor_status}22;border-radius:4px;">{status.upper()}</span>'
     h += f'<span style="font-size:11px;color:#fbbf24;">{plan["nome"]}</span>'
-    if cat == 'ciclismo':
-        local, icon_local, cor_local, desc_local = recomendar_local(plan["nome"])
-        h += f'<span style="font-size:10px;color:{cor_local};font-weight:600;padding:3px 8px;background:{cor_local}22;border-radius:4px;title="{desc_local}">{icon_local} {local}</span>'
     h += f'</div>'
     h += f'</div>'
 
@@ -1257,12 +1244,7 @@ def build_dia_proxima(wd, plan):
     h = f'<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:10px;border-left:3px solid {cor};">'
     h += f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;">'
     h += f'<div style="font-size:13px;color:#ddd;font-weight:600;">{icon} {dias_pt[wd]} <span style="color:#888;font-weight:400;margin-left:6px;font-size:11px;">{plan["horario"]}</span></div>'
-    h += f'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
-    h += f'<span style="font-size:11px;color:#fbbf24;">{plan["nome"]} · {plan["dur_total"]}min · TSS {plan.get("tss_alvo", 0)}</span>'
-    if cat == 'ciclismo':
-        local, icon_local, cor_local, desc_local = recomendar_local(plan["nome"])
-        h += f'<span style="font-size:10px;color:{cor_local};font-weight:600;padding:3px 8px;background:{cor_local}22;border-radius:4px;title="{desc_local}">{icon_local} {local}</span>'
-    h += f'</div>'
+    h += f'<div style="font-size:11px;color:#fbbf24;">{plan["nome"]} · {plan["dur_total"]}min · TSS {plan.get("tss_alvo", 0)}</div>'
     h += f'</div>'
     if cat == 'ciclismo':
         h += '<div style="display:grid;grid-template-columns:200px 60px 1fr 1fr 90px;gap:8px;font-size:10px;color:#666;padding:4px 8px;background:#1a1a1a;border-radius:4px;margin-bottom:4px;">'
@@ -1285,7 +1267,7 @@ def build_dia_proxima(wd, plan):
 
 # ─── Build Dashboard ───────────────────────────────────────────────────────
 
-def build_dashboard(treinos, wellness, fitness, estado):
+def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     treinos_list = sorted(treinos.values(), key=lambda x: x.get('data', ''), reverse=True)
     ftp_gap, sem_220, ganho_ftp = prever_ftp(treinos)
     wkg = round(FTP / PESO, 2)
@@ -1540,13 +1522,16 @@ def build_dashboard(treinos, wellness, fitness, estado):
     aba_cond += '<div style="background:#0a0a0a;padding:14px;border-radius:8px;"><canvas id="wellnessChart" style="width:100%;height:400px;"></canvas></div>'
     aba_cond += '</div>'
 
+    # v11.7: Aba Analytics
+    aba_analytics = build_aba_analytics(analytics_data)
+
     # ─── HTML completo ─────────────────────────────────────────────────────
     html = f'''<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🚴 Strava Coach v10.1</title>
+<title>🚴 Strava Coach v11.7</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <style>
 * {{ box-sizing: border-box; margin: 0; padding: 0; }}
@@ -1583,7 +1568,7 @@ body {{ font-family: 'DM Sans', -apple-system, sans-serif; background: #0a0a0a; 
 <div class="container">
 
 <div class="header">
-<h1>🚴 Strava Coach v10.1</h1>
+<h1>🚴 Strava Coach v11.7</h1>
 <p>Atualizado em {agora().strftime('%d/%m/%Y %H:%M')} (BRT)</p>
 </div>
 
@@ -1604,12 +1589,14 @@ body {{ font-family: 'DM Sans', -apple-system, sans-serif; background: #0a0a0a; 
 <button class="tab" data-tab="proxima">🎯 Próxima Semana</button>
 <button class="tab" data-tab="historico">📊 Histórico</button>
 <button class="tab" data-tab="condicionamento">📈 Condicionamento</button>
+<button class="tab" data-tab="analytics">📊 Analytics</button>
 </div>
 
 <div id="atual" class="tab-content active">{aba_atual}</div>
 <div id="proxima" class="tab-content">{aba_prox}</div>
 <div id="historico" class="tab-content">{aba_hist}</div>
 <div id="condicionamento" class="tab-content">{aba_cond}</div>
+<div id="analytics" class="tab-content">{aba_analytics}</div>
 
 </div>
 
@@ -1697,8 +1684,8 @@ document.querySelectorAll('.metric-btn').forEach(btn => {{
 # ─── MAIN ──────────────────────────────────────────────────────────────────
 
 def main():
-    print("🎨 Dashboard Generator v10.1 (Periodização em Blocos)\n")
-    treinos, wellness, fitness, estado = load_data()
+    print("🎨 Dashboard Generator v11.7 (Periodização + Analytics)\n")
+    treinos, wellness, fitness, estado, analytics_data = load_data()
     print(f"✅ {len(treinos)} treinos carregados")
 
     hoje = agora()
@@ -1739,7 +1726,7 @@ def main():
 
     print(f"📚 Bloco atual: {BLOCOS[estado['bloco_atual']]['nome']} ({estado['semana_no_bloco']}/4)")
 
-    html = build_dashboard(treinos, wellness, fitness, estado)
+    html = build_dashboard(treinos, wellness, fitness, estado, analytics_data)
     with open('dashboard.html', 'w', encoding='utf-8') as f:
         f.write(html)
     print(f"✅ dashboard.html gerado ({len(html):,} bytes)")
