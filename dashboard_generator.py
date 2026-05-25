@@ -1325,6 +1325,76 @@ def build_dia_proxima(wd, plan):
 
 # ─── Build Card Comparação Periódica ─────────────────────────────────────
 
+def build_readiness_score(tsb, atl, ctl, historico):
+    """
+    Score 0-100 de prontidão para treinar.
+    Baseado em TSB, tendência ATL e CTL.
+    """
+    score = 50  # base neutra
+    status = ''
+    cor = '#888'
+    label = ''
+
+    # TSB (peso 50%)
+    if tsb >= 6:
+        score += 25      # descansado / adaptando
+    elif -10 <= tsb <= 5:
+        score += 15      # mantendo
+    elif -30 <= tsb <= -11:
+        score += 5       # evoluindo mas fatigado
+    else:
+        score -= 20      # alto risco
+
+    # Tendência ATL (peso 30%) — ATL caindo = menos fadiga = melhor
+    if len(historico) >= 3:
+        atl_3d_atras = historico[-3].get('atl', atl)
+        if atl < atl_3d_atras:
+            score += 15  # fadiga caindo
+        elif atl > atl_3d_atras * 1.05:
+            score -= 10  # fadiga subindo rápido
+
+    # CTL (peso 20%) — fitness base
+    if ctl >= 50:
+        score += 10
+    elif ctl >= 35:
+        score += 5
+    else:
+        score -= 5
+
+    score = max(0, min(100, score))
+
+    if score >= 80:
+        label, cor, emoji = 'PRONTO', '#4ade80', '🟢'
+        status = 'Ótimo para treino intenso'
+    elif score >= 60:
+        label, cor, emoji = 'BOM', '#86efac', '🟡'
+        status = 'Bom para treino moderado'
+    elif score >= 40:
+        label, cor, emoji = 'REGULAR', '#fbbf24', '🟠'
+        status = 'Prefira treino leve'
+    else:
+        label, cor, emoji = 'BAIXO', '#f87171', '🔴'
+        status = 'Recuperação recomendada'
+
+    h  = f'<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:14px;border-left:3px solid {cor};">'
+    h += f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+    h += f'<div style="font-size:12px;color:{cor};font-weight:600;text-transform:uppercase;letter-spacing:1px;">{emoji} Readiness Score</div>'
+    h += f'<div style="font-size:24px;font-weight:700;color:{cor};">{score}<span style="font-size:12px;color:#666;">/100</span></div>'
+    h += f'</div>'
+    # Barra de progresso
+    h += f'<div style="background:#1a1a1a;border-radius:4px;height:6px;margin-bottom:8px;">'
+    h += f'<div style="background:{cor};width:{score}%;height:6px;border-radius:4px;transition:width 0.3s;"></div>'
+    h += f'</div>'
+    h += f'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:10px;color:#888;">'
+    h += f'<div>TSB: <span style="color:#ddd;">{tsb:+.1f}</span></div>'
+    h += f'<div>ATL: <span style="color:#ddd;">{atl:.1f}</span></div>'
+    h += f'<div>CTL: <span style="color:#ddd;">{ctl:.1f}</span></div>'
+    h += f'</div>'
+    h += f'<div style="margin-top:6px;font-size:11px;color:{cor};">{status}</div>'
+    h += f'</div>'
+    return h
+
+
 def build_card_comparacao(analise, historico, treinos={}):
     """Compara esta semana vs semana passada vs média 4 semanas"""
     from datetime import datetime, timedelta
@@ -1874,6 +1944,7 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     
     # v11.7: Gráficos e comparação
     card_comparacao = build_card_comparacao(analise, historico, treinos)
+    card_readiness = build_readiness_score(tsb, atl, ctl, historico)
     grafico_ctl_atl = build_grafico_ctl_atl_tsb(historico)
     grafico_power = build_grafico_power_curve(analytics_data)
     grafico_zonas = build_grafico_distribuicao_zonas(distrib)
@@ -1943,6 +2014,7 @@ body {{ font-family: 'DM Sans', -apple-system, sans-serif; background: #0a0a0a; 
 {cards_analise}
 {alerts_html}
 {card_hoje}
+{card_readiness}
 {card_comparacao}
 {cards_vo2}
 {header_period}
