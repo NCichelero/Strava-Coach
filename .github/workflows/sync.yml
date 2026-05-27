@@ -5,9 +5,12 @@ on:
     # ⏰ HORÁRIOS DE SÃO PAULO (BRT = UTC-3)
     # Conversão: UTC = BRT + 3 horas
     
-    - cron: '0 11 * * *'   # 09:00 BRT ✓
-    - cron: '0 14 * * *'   # 12:00 BRT ✓
-    - cron: '0 0 * * *'    # 22:00 BRT (dia anterior) ✓
+    - cron: '0 09 * * *'   # 09:00 BRT ✓
+     timezone: 'America/Sao_Paulo'
+    - cron: '0 12 * * *'   # 12:00 BRT ✓
+     timezone: 'America/Sao_Paulo'
+    - cron: '0 22 * * *'    # 22:00 BRT (dia anterior) ✓
+     timezone: 'America/Sao_Paulo'
   
   workflow_dispatch:
 
