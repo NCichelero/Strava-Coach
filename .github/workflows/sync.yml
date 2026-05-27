@@ -2,15 +2,9 @@ name: Sync Strava Coach
 
 on:
   schedule:
-    # ⏰ HORÁRIOS DE SÃO PAULO (BRT = UTC-3)
-    # Conversão: UTC = BRT + 3 horas
-    
-    - cron: '0 09 * * *'   # 09:00 BRT ✓
-     timezone: 'America/Sao_Paulo'
-    - cron: '0 12 * * *'   # 12:00 BRT ✓
-     timezone: 'America/Sao_Paulo'
-    - cron: '0 22 * * *'    # 22:00 BRT (dia anterior) ✓
-     timezone: 'America/Sao_Paulo'
+    - cron: '0 12 * * *'   # 09:00 BRT
+    - cron: '0 15 * * *'   # 12:00 BRT
+    - cron: '0 1 * * *'    # 22:00 BRT (dia anterior UTC)
   
   workflow_dispatch:
 
