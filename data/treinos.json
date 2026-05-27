@@ -4971,5 +4971,30 @@
     ],
     "pico_5min": 156,
     "fc_repouso_dia": 0
+  },
+  "18668436189": {
+    "id": "18668436189",
+    "data": "2026-05-26",
+    "nome": "Academia - Superiores",
+    "categoria": "academia",
+    "tipo": "WeightTraining",
+    "sport_type": "WeightTraining",
+    "duracao_min": 63.7,
+    "distancia_km": 0.0,
+    "potencia_avg": 0,
+    "potencia_max": 0,
+    "potencia_norm": 0,
+    "fc_avg": 86.9,
+    "fc_max": 135.0,
+    "elevacao": 0,
+    "velocidade_avg": 0.0,
+    "velocidade_max": 0.0,
+    "calorias": 0,
+    "cadence_avg": 0,
+    "kilojoules": 0,
+    "source": "strava",
+    "laps": [],
+    "pico_5min": 0,
+    "fc_repouso_dia": 0
   }
 }
