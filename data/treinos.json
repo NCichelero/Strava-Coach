@@ -1,43 +1,4 @@
 {
-  "17890532760": {
-    "id": "17890532760",
-    "data": "2026-03-28",
-    "nome": "Lunch Ride",
-    "categoria": "ciclismo",
-    "tipo": "Ride",
-    "sport_type": "Ride",
-    "duracao_min": 5.0,
-    "distancia_km": 1.75,
-    "potencia_avg": 90.5,
-    "potencia_max": 0,
-    "potencia_norm": 0,
-    "fc_avg": 125.2,
-    "fc_max": 169.0,
-    "elevacao": 3.0,
-    "velocidade_avg": 21.1,
-    "velocidade_max": 37.9,
-    "calorias": 0,
-    "cadence_avg": 0,
-    "kilojoules": 27.1,
-    "source": "strava",
-    "laps": [
-      {
-        "idx": 1,
-        "nome": "Lap 1",
-        "dur_seg": 299,
-        "dur_min": 5.0,
-        "dist_km": 1.75,
-        "vel_avg": 21.1,
-        "pot_avg": 90,
-        "pot_max": 0,
-        "fc_avg": 125,
-        "fc_max": 169,
-        "zona": "Z1"
-      }
-    ],
-    "pico_5min": 0,
-    "fc_repouso_dia": 0
-  },
   "17899510978": {
     "id": "17899510978",
     "data": "2026-03-29",
