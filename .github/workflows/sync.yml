@@ -2,12 +2,14 @@ name: Sync Strava Coach
 
 on:
   schedule:
-    - cron: '0 12 * * *'   # 09:00 BRT
-    - cron: '0 15 * * *'   # 12:00 BRT
-    - cron: '0 1 * * *'    # 22:00 BRT (dia anterior UTC)
-  
+    - cron: '0 9 * * *'
+      timezone: 'America/Sao_Paulo'
+    - cron: '0 12 * * *'
+      timezone: 'America/Sao_Paulo'
+    - cron: '0 22 * * *'
+      timezone: 'America/Sao_Paulo'
   workflow_dispatch:
-
+  
 permissions:
   contents: write
 
