@@ -2,8 +2,8 @@ name: Sync Strava Coach
 
 on:
   schedule:
-    - cron: '7 9 * * *'
-    - cron: '7 12 * * *'
+    - cron: '7 10 * * *'
+    - cron: '7 13 * * *'
     - cron: '7 00 * * *'
   workflow_dispatch:
   
