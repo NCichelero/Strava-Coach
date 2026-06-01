@@ -4345,7 +4345,47 @@
     "cadence_avg": 81.4,
     "kilojoules": 590.8,
     "source": "strava",
-    "laps": [],
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 600,
+        "dur_min": 10.0,
+        "dist_km": 3.89,
+        "vel_avg": 23.3,
+        "pot_avg": 97,
+        "pot_max": 0,
+        "fc_avg": 107,
+        "fc_max": 122,
+        "zona": "Z1"
+      },
+      {
+        "idx": 2,
+        "nome": "Lap 2",
+        "dur_seg": 3000,
+        "dur_min": 50.0,
+        "dist_km": 25.48,
+        "vel_avg": 30.6,
+        "pot_avg": 158,
+        "pot_max": 0,
+        "fc_avg": 135,
+        "fc_max": 140,
+        "zona": "Z2"
+      },
+      {
+        "idx": 3,
+        "nome": "Lap 3",
+        "dur_seg": 600,
+        "dur_min": 10.0,
+        "dist_km": 4.08,
+        "vel_avg": 24.5,
+        "pot_avg": 90,
+        "pot_max": 0,
+        "fc_avg": 110,
+        "fc_max": 135,
+        "zona": "Z1"
+      }
+    ],
     "pico_5min": 158,
     "fc_repouso_dia": 0
   }
