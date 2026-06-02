@@ -4167,5 +4167,44 @@
     ],
     "pico_5min": 158,
     "fc_repouso_dia": 0
+  },
+  "18762925440": {
+    "id": "18762925440",
+    "data": "2026-06-02",
+    "nome": "Ciclismo - Z2",
+    "categoria": "ciclismo",
+    "tipo": "VirtualRide",
+    "sport_type": "VirtualRide",
+    "duracao_min": 51.8,
+    "distancia_km": 19.74,
+    "potencia_avg": 142.7,
+    "potencia_max": 158,
+    "potencia_norm": 146,
+    "fc_avg": 131.5,
+    "fc_max": 143.0,
+    "elevacao": 346.4,
+    "velocidade_avg": 22.9,
+    "velocidade_max": 51.0,
+    "calorias": 0,
+    "cadence_avg": 87.7,
+    "kilojoules": 443.7,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 3110,
+        "dur_min": 51.8,
+        "dist_km": 19.74,
+        "vel_avg": 22.9,
+        "pot_avg": 142,
+        "pot_max": 0,
+        "fc_avg": 131,
+        "fc_max": 143,
+        "zona": "Z2"
+      }
+    ],
+    "pico_5min": 154,
+    "fc_repouso_dia": 0
   }
 }
