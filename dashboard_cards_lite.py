@@ -479,7 +479,7 @@ def build_aba_analytics(analytics_data, subjetivos={},
     h += build_card_power_curve(analytics_data)
     h += build_card_decoupling(analytics_data.get('decoupling', {}))
     h += build_card_forecast(analytics_data.get('forecast', {}))
-    h += build_card_rolo_rua(analytics_data.get('rolo_rua', {}))
+    # rolo_rua removido v11.8.1
 
     # Novos cards v11.8
     h += build_card_ef_tendencia(analytics_data.get('ef_tendencia'))
