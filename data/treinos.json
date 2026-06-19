@@ -2560,5 +2560,44 @@
     "laps": [],
     "pico_5min": 0,
     "fc_repouso_dia": 0
+  },
+  "18977734664": {
+    "id": "18977734664",
+    "data": "2026-06-18",
+    "nome": "MyWhoosh - Bruges",
+    "categoria": "ciclismo",
+    "tipo": "VirtualRide",
+    "sport_type": "VirtualRide",
+    "duracao_min": 64.7,
+    "distancia_km": 31.4,
+    "potencia_avg": 133.0,
+    "potencia_max": 181,
+    "potencia_norm": 134,
+    "fc_avg": 131.0,
+    "fc_max": 143.0,
+    "elevacao": 0,
+    "velocidade_avg": 29.1,
+    "velocidade_max": 40.5,
+    "calorias": 0,
+    "cadence_avg": 89.9,
+    "kilojoules": 516.5,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 3885,
+        "dur_min": 64.8,
+        "dist_km": 31.4,
+        "vel_avg": 29.1,
+        "pot_avg": 133,
+        "pot_max": 0,
+        "fc_avg": 131,
+        "fc_max": 143,
+        "zona": "Z2"
+      }
+    ],
+    "pico_5min": 146,
+    "fc_repouso_dia": 0
   }
 }
