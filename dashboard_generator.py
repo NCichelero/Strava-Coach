@@ -436,7 +436,7 @@ def gerar_plano_semana_bloco(bloco, semana_no_bloco, tsb=0):
 
 def load_data():
     treinos, wellness, fitness, estado = {}, [], {'ctl': 36, 'atl': 54, 'tsb': -18}, {}
-    for nome, var in [('treinos.json', None), ('wellness.json', None), ('fitness.json', None), ('estado.json', None)]:
+    for nome in ['treinos.json', 'wellness.json', 'fitness.json', 'estado.json']:
         path = f'data/{nome}'
         if os.path.exists(path):
             with open(path, 'r', encoding='utf-8') as f:
@@ -445,9 +445,20 @@ def load_data():
             elif nome == 'wellness.json': wellness = data
             elif nome == 'fitness.json': fitness = data
             elif nome == 'estado.json': estado = data
+
+    # Intervals.icu: sobrescreve CTL/ATL/TSB se disponível (mais preciso)
+    intervals_dados = {}
+    if os.path.exists('data/intervals_cache.json'):
+        with open('data/intervals_cache.json', 'r', encoding='utf-8') as f:
+            intervals_dados = json.load(f)
+        if not wellness and intervals_dados.get('wellness'):
+            wellness = intervals_dados['wellness']
+        if intervals_dados.get('fitness'):
+            fitness = intervals_dados['fitness']
+
     print("📊 Gerando analytics...")
     analytics_data = gerar_analytics_completo()
-    return treinos, wellness, fitness, estado, analytics_data
+    return treinos, wellness, fitness, estado, analytics_data, intervals_dados
 
 def save_estado(estado):
     os.makedirs('data', exist_ok=True)
@@ -965,7 +976,7 @@ new Chart(document.getElementById('chart_ctl_atl'), {{
 
 # ─── BUILD DASHBOARD v12 ───────────────────────────────────────────────────
 
-def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
+def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}, intervals_dados={}):
     treinos_list = sorted(treinos.values(), key=lambda x: x.get('data', ''), reverse=True)
     wkg = round(FTP / PESO, 2)
     historico = calcular_wellness_historico(treinos)
@@ -980,9 +991,16 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     plano_atual = gerar_plano_semana_bloco(bloco_atual, semana_no_bloco)
     analise = analisar_semana_atual(treinos, plano_atual)
 
+    # CTL/ATL/TSB: usa Intervals se disponível (mais preciso)
     ultimos_reais = [h for h in historico if not h.get('forecast')]
-    ultimo = ultimos_reais[-1] if ultimos_reais else {'ctl': 36, 'atl': 54, 'tsb': -18, 'tss': 0}
-    ctl, atl, tsb = ultimo['ctl'], ultimo['atl'], ultimo['tsb']
+    ultimo_local = ultimos_reais[-1] if ultimos_reais else {'ctl': 36, 'atl': 54, 'tsb': -18, 'tss': 0}
+    fitness_intervals = intervals_dados.get('fitness') or {}
+    if fitness_intervals.get('ctl'):
+        ctl = fitness_intervals['ctl']
+        atl = fitness_intervals['atl']
+        tsb = fitness_intervals['tsb']
+    else:
+        ctl, atl, tsb = ultimo_local['ctl'], ultimo_local['atl'], ultimo_local['tsb']
 
     if tsb <= -31: cor_tsb, forma_label = '#f87171', 'Alto Risco'
     elif -30 <= tsb <= -11: cor_tsb, forma_label = '#3b82f6', 'Evoluindo'
@@ -990,13 +1008,108 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     elif 6 <= tsb <= 20: cor_tsb, forma_label = '#86efac', 'Descansando'
     else: cor_tsb, forma_label = '#fbbf24', 'Adaptando'
 
+    # Readiness real com dados do Intervals (HRV + sono + FC repouso + TSB)
+    try:
+        from intervals_api import calcular_readiness_real, treino_adaptativo, progressao_adaptativa, previsao_forma, resumo_rpe_recente, calcular_watts_bloco
+        readiness_real = calcular_readiness_real(intervals_dados, tsb)
+        usa_intervals = True
+    except ImportError:
+        readiness_real = None
+        usa_intervals = False
+
     prox_bloco, prox_semana, razoes_prox, forcou_rec = proxima_semana_periodizacao(
         estado, tsb, analise['aderencia_pct'], analise['treinos_perdidos'])
+
+    # Progressão adaptativa baseada em TSS real vs planejado
+    if usa_intervals:
+        prox_semana_adap, prox_bloco_adap, motivo_prog = progressao_adaptativa(analise, semana_no_bloco, bloco_atual)
+        if prox_semana_adap != prox_semana:
+            prox_semana = prox_semana_adap
+            prox_bloco = prox_bloco_adap
+            razoes_prox = [motivo_prog] + list(razoes_prox)
+
     plano_proxima = gerar_plano_semana_bloco(prox_bloco, prox_semana, tsb)
     bloco_prox_info = BLOCOS[prox_bloco]
 
     fase_label = 'BUILD' if semana_no_bloco < 4 else 'RECOVERY'
     fase_cor = '#fbbf24' if fase_label == 'BUILD' else '#10b981'
+
+    # Treino adaptativo de hoje baseado em readiness
+    hoje_dia_adaptado = None
+    motivo_adaptacao = ''
+    if usa_intervals and readiness_real:
+        hoje_idx = next((i for i, d in enumerate(analise['dias']) if d.get('is_hoje')), None)
+        if hoje_idx is not None:
+            plano_hoje_orig = analise['dias'][hoje_idx]['plano']
+            plano_hoje_adj, foi_adaptado, motivo_adaptacao = treino_adaptativo(
+                plano_hoje_orig, readiness_real, tsb)
+            if foi_adaptado:
+                hoje_dia_adaptado = plano_hoje_adj
+
+    # Watts exatos nos blocos do plano atual (enriquece todos os dias)
+    if usa_intervals:
+        for dia in analise['dias']:
+            if dia['plano'].get('blocos'):
+                dia['plano']['blocos'] = [calcular_watts_bloco(b, FTP) for b in dia['plano']['blocos']]
+        for wd in plano_proxima:
+            if plano_proxima[wd].get('blocos'):
+                plano_proxima[wd]['blocos'] = [calcular_watts_bloco(b, FTP) for b in plano_proxima[wd]['blocos']]
+
+    # RPE recente
+    rpe_resumo = None
+    if usa_intervals:
+        atividades_intervals = intervals_dados.get('atividades', [])
+        rpe_resumo = resumo_rpe_recente(atividades_intervals) if atividades_intervals else None
+
+    # Previsão de forma (data alvo do config)
+    data_prova = CONFIG.get('data_prova') or CONFIG.get('data_teste_ftp')
+    previsao_html = ''
+    if data_prova and usa_intervals:
+        prev = previsao_forma(historico, data_prova)
+        if prev:
+            estado_alvo = prev['estado_alvo']
+            cor_tsb_prev = '#4ade80' if (estado_alvo and 5 <= estado_alvo['tsb'] <= 20) else '#fbbf24'
+            previsao_html = f'<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:14px;border-left:3px solid {cor_tsb_prev};">'
+            previsao_html += f'<div style="font-size:12px;color:{cor_tsb_prev};font-weight:600;margin-bottom:8px;text-transform:uppercase;">🎯 Previsão de Forma — {data_prova}</div>'
+            previsao_html += f'<div style="font-size:11px;color:#888;margin-bottom:6px;">{prev["dias_faltam"]} dias para o evento</div>'
+            if estado_alvo:
+                previsao_html += f'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px;margin-bottom:8px;">'
+                previsao_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;font-size:9px;">CTL</div><div style="color:#3b82f6;font-weight:700;">{estado_alvo["ctl"]:.0f}</div></div>'
+                previsao_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;font-size:9px;">ATL</div><div style="color:#ef4444;font-weight:700;">{estado_alvo["atl"]:.0f}</div></div>'
+                previsao_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;font-size:9px;">TSB</div><div style="color:{cor_tsb_prev};font-weight:700;">{estado_alvo["tsb"]:+.0f}</div></div>'
+                previsao_html += '</div>'
+            previsao_html += f'<div style="font-size:11px;color:{cor_tsb_prev};">{prev["sugestao"]}</div></div>'
+
+    # Readiness HTML
+    if readiness_real:
+        r = readiness_real
+        w_data = r.get('wellness') or {}
+        readiness_html = f'<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:14px;border-left:3px solid {r["cor"]};">'
+        readiness_html += f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">'
+        readiness_html += f'<div style="font-size:12px;color:{r["cor"]};font-weight:600;text-transform:uppercase;letter-spacing:1px;">Readiness Score</div>'
+        readiness_html += f'<div style="font-size:24px;font-weight:700;color:{r["cor"]};">{r["score"]}<span style="font-size:12px;color:#666;">/100</span></div></div>'
+        readiness_html += f'<div style="background:#1a1a1a;border-radius:4px;height:6px;margin-bottom:10px;"><div style="background:{r["cor"]};width:{r["score"]}%;height:6px;border-radius:4px;"></div></div>'
+        # Métricas Intervals
+        hrv = w_data.get("hrv") or w_data.get("hrv_score")
+        sono = w_data.get("sono_horas")
+        fc_rep = w_data.get("fc_repouso")
+        readiness_html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;font-size:10px;margin-bottom:8px;">'
+        readiness_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;">HRV</div><div style="color:#ddd;font-weight:700;font-size:13px;">{hrv:.0f}' if hrv else '<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;">HRV</div><div style="color:#444;">—'
+        readiness_html += '</div></div>'
+        readiness_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;">Sono</div><div style="color:#ddd;font-weight:700;font-size:13px;">{sono:.1f}h' if sono else '<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;">Sono</div><div style="color:#444;">—'
+        readiness_html += '</div></div>'
+        readiness_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;">FC Rep.</div><div style="color:#ddd;font-weight:700;font-size:13px;">{fc_rep}bpm' if fc_rep else '<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;">FC Rep.</div><div style="color:#444;">—'
+        readiness_html += '</div></div></div>'
+        # Fatores
+        for fator in r.get('fatores', []):
+            readiness_html += f'<div style="font-size:10px;color:#888;padding:2px 0;">{fator}</div>'
+        if motivo_adaptacao:
+            readiness_html += f'<div style="margin-top:8px;padding:8px;background:#1a1a1a;border-radius:6px;font-size:11px;color:#fbbf24;">{motivo_adaptacao}</div>'
+        if rpe_resumo:
+            readiness_html += f'<div style="margin-top:6px;font-size:10px;color:#666;">RPE médio 14d: {rpe_resumo["rpe_medio"]} · {rpe_resumo["interpretacao"]}</div>'
+        readiness_html += f'<div style="margin-top:6px;font-size:11px;color:{r["cor"]};">{r["status"]}</div></div>'
+    else:
+        readiness_html = build_readiness_score(tsb, atl, ctl, historico)
 
     # ── Aba Hoje ────────────────────────────────────────────────────────────
     hoje_dia = next((d for d in analise['dias'] if d.get('is_hoje')), None)
@@ -1195,8 +1308,8 @@ showTab('hoje');
 
 if __name__ == '__main__':
     print("🚴 Strava Coach v12 — gerando dashboard...")
-    treinos, wellness, fitness, estado, analytics_data = load_data()
-    html = build_dashboard(treinos, wellness, fitness, estado, analytics_data)
+    treinos, wellness, fitness, estado, analytics_data, intervals_dados = load_data()
+    html = build_dashboard(treinos, wellness, fitness, estado, analytics_data, intervals_dados)
     out = 'dashboard.html'
     with open(out, 'w', encoding='utf-8') as f:
         f.write(html)
