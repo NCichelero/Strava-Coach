@@ -36,6 +36,10 @@ jobs:
       - name: Run Strava Coach
         run: python strava_coach.py
 
+        - name: Sync Intervals.icu
+          run: python intervals_sync.py
+          continue-on-error: true
+
       - name: Generate Dashboard
         run: python dashboard_generator.py
 
