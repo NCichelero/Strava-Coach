@@ -1009,5 +1009,195 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}):
     plan_h = hoje_dia['plano'] if hoje_dia else {}
     sups_hoje = calcular_suplementacao(plan_h.get('dur_total', 0))
 
-    # Card Hoje
-    card_hoje_html = f'<div style="back
+    card_hoje_html = ''
+    if hoje_dia:
+        cat_h = plan_h.get('tipo', 'recuperacao')
+        is_ciclismo_h = cat_h == 'ciclismo'
+        cor_card = '#1e3a5f' if is_ciclismo_h else ('#2d1b4e' if cat_h == 'academia' else '#1a1a1a')
+        borda_card = '#3b82f6' if is_ciclismo_h else ('#a855f7' if cat_h == 'academia' else '#6b7280')
+        card_hoje_html = f'<div style="background:{cor_card};border-radius:12px;padding:18px;border-left:4px solid {borda_card};margin-bottom:12px;">'
+        card_hoje_html += f'<div style="font-size:11px;color:{borda_card};font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">⏰ Hoje — {plan_h.get("nome","")}</div>'
+        card_hoje_html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:11px;margin-bottom:10px;">'
+        card_hoje_html += f'<div style="color:#888;">Duração<br><span style="color:#fff;font-weight:700;font-size:14px;">{plan_h.get("dur_total",0)}min</span></div>'
+        card_hoje_html += f'<div style="color:#888;">TSS Alvo<br><span style="color:#fbbf24;font-weight:700;font-size:14px;">{plan_h.get("tss_alvo",0)}</span></div>'
+        card_hoje_html += f'<div style="color:#888;">Horário<br><span style="color:#fff;font-weight:700;font-size:14px;">{plan_h.get("horario","—")}</span></div>'
+        card_hoje_html += '</div>'
+        if is_ciclismo_h and sups_hoje.get('carbo_g', 0) > 0:
+            card_hoje_html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:10px;padding:8px;background:#0a0a0a;border-radius:6px;">'
+            card_hoje_html += f'<div style="color:#888;">CARBO<br><span style="color:#facc15;font-weight:700;">{sups_hoje["carbo_g"]}g</span></div>'
+            card_hoje_html += f'<div style="color:#888;">ÁGUA<br><span style="color:#3b82f6;font-weight:700;">{sups_hoje["agua_ml"]}ml</span></div>'
+            card_hoje_html += f'<div style="color:#888;">SÓDIO<br><span style="color:#ec4899;font-weight:700;">{sups_hoje["sodio_mg"]}mg</span></div>'
+            card_hoje_html += '</div>'
+        card_hoje_html += '</div>'
+
+    # Card Próximo dia
+    card_prox_html = ''
+    if prox_dia:
+        dias_pt = ['Segunda','Terça','Quarta','Quinta','Sexta','Sábado','Domingo']
+        plan_p = prox_dia['plano']
+        card_prox_html = '<div style="background:#111;border-radius:12px;padding:18px;border-left:4px solid #444;margin-bottom:12px;">'
+        card_prox_html += f'<div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📅 Próximo — {dias_pt[prox_dia["weekday"]]}</div>'
+        card_prox_html += f'<div style="font-size:12px;color:#ddd;font-weight:600;margin-bottom:6px;">{plan_p.get("nome","")}</div>'
+        card_prox_html += f'<div style="font-size:11px;color:#666;">{plan_p.get("dur_total",0)}min · TSS {plan_p.get("tss_alvo",0)} · {plan_p.get("horario","")}</div>'
+        card_prox_html += '</div>'
+
+    # TSS semana
+    tss_real = analise['tss_realizado']
+    tss_pct = analise['tss_pct']
+    tss_cor = '#4ade80' if 80 <= tss_pct <= 120 else ('#facc15' if 50 <= tss_pct <= 140 else '#f87171')
+    tss_bar = min(tss_pct, 150)
+    meta_ctl = CONFIG.get('meta_ctl', 45)
+
+    # Readiness
+    readiness_html = build_readiness_score(tsb, atl, ctl, historico)
+
+    # VO2max card
+    vo2_html = ''
+    if vo2_pot > 0:
+        vo2_html = f'<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:14px;border-left:3px solid {cor_pot};">'
+        vo2_html += f'<div style="font-size:12px;color:{cor_pot};font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:1px;">VO2max (potência)</div>'
+        vo2_html += f'<div style="font-size:28px;font-weight:700;color:{cor_pot};">{vo2_pot}<span style="font-size:13px;color:#666;">ml/kg/min</span></div>'
+        vo2_html += f'<div style="font-size:11px;color:{cor_pot};margin-top:4px;">{label_pot} · Pico 5min: {melhor_5min}W</div>'
+        vo2_html += '</div>'
+
+    # ── Aba Semana
+    aba_semana_html = ''
+    for i, dia_info in enumerate(analise['dias']):
+        aba_semana_html += build_dia_semana_atual(dia_info, i)
+
+    # ── Aba Próxima
+    aba_proxima_html = ''
+    for wd, plan in plano_proxima.items():
+        aba_proxima_html += build_dia_proxima(wd, plan)
+
+    razoes_html = ''.join(f'<div style="font-size:11px;color:#888;padding:3px 0;">{r}</div>' for r in razoes_prox)
+
+    # ── Aba Histórico
+    aba_historico_html = ''.join(build_treino_realizado_inline(t, f'hist-{i}') for i, t in enumerate(treinos_list[:50]))
+
+    # ── Aba Condicionamento
+    grafico_ctl = build_grafico_ctl_atl_tsb(historico)
+    comparacao_html = build_card_comparacao(analise, historico, treinos)
+
+    distrib_html = ''
+    if distrib:
+        distrib_html = '<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:14px;">'
+        distrib_html += '<div style="font-size:12px;color:#3b82f6;font-weight:600;margin-bottom:10px;text-transform:uppercase;">📊 Distribuição de Zonas (4sem)</div>'
+        distrib_html += f'<div style="font-size:12px;color:{distrib["cor"]};margin-bottom:8px;">{distrib["modelo"]}</div>'
+        for z in ['Z1','Z2','Z3','Z4','Z5']:
+            pct_z = distrib['pcts'][z]
+            cor_z = {'Z1':'#9ca3af','Z2':'#4ade80','Z3':'#facc15','Z4':'#fb923c','Z5':'#f87171'}.get(z,'#888')
+            distrib_html += f'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;font-size:11px;"><div style="color:{cor_z};width:20px;">{z}</div><div style="flex:1;background:#1a1a1a;height:8px;border-radius:4px;overflow:hidden;"><div style="background:{cor_z};height:100%;width:{min(pct_z,100)}%;"></div></div><div style="color:#ddd;width:35px;text-align:right;">{pct_z}%</div></div>'
+        distrib_html += f'<div style="font-size:10px;color:#666;margin-top:6px;">{distrib["descricao"]}</div></div>'
+
+    # ── Aba Analytics
+    aba_analytics_html = build_aba_analytics(analytics_data) if analytics_data else '<div style="color:#666;padding:20px;">Analytics indisponível</div>'
+
+    # ── Bloco info
+    bloco_html = f'<div style="background:#0a0a0a;padding:12px;border-radius:8px;margin-bottom:12px;border-left:3px solid {bloco_info["cor"]};"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;"><div><span style="font-size:16px;">{bloco_info["icone"]}</span> <span style="font-size:12px;color:{bloco_info["cor"]};font-weight:700;">{bloco_info["nome"]}</span> <span style="font-size:10px;color:#666;">sem {semana_no_bloco}/4 · {fase_label}</span></div><div style="font-size:10px;color:#888;">{bloco_info["foco"]}</div></div></div>'
+
+    js_toggle = """
+function showTab(name){document.querySelectorAll('.tab-content').forEach(t=>t.style.display='none');document.querySelectorAll('.tab-btn').forEach(b=>{b.style.background='#1a1a1a';b.style.color='#888';b.style.borderBottom='2px solid transparent';});document.getElementById('tab-'+name).style.display='block';var btn=document.getElementById('btn-'+name);btn.style.background='#0d0d0d';btn.style.color='#fff';btn.style.borderBottom='2px solid #3b82f6';}
+function toggleTreino(id){var el=document.getElementById(id);if(el)el.style.display=el.style.display==='none'?'block':'none';}
+"""
+
+    vo2_card = vo2_html if vo2_html else '<div style="background:#0a0a0a;padding:12px;border-radius:8px;"><div style="font-size:10px;color:#666;">VO2max — sem dados recentes</div></div>'
+
+    html = f"""<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>🚴 Strava Coach v12</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+*{{box-sizing:border-box;margin:0;padding:0;}}
+body{{background:#0d0d0d;color:#ddd;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:13px;}}
+.container{{max-width:900px;margin:0 auto;padding:12px;}}
+.tabs{{display:flex;background:#111;border-bottom:1px solid #222;overflow-x:auto;}}
+.tab-btn{{flex:none;padding:10px 14px;cursor:pointer;font-size:12px;font-weight:600;border:none;border-bottom:2px solid transparent;background:#1a1a1a;color:#888;white-space:nowrap;}}
+.tab-btn:hover{{color:#ddd;}}
+.tab-content{{display:none;padding:14px 0;}}
+</style>
+</head>
+<body>
+<div style="background:#111;border-bottom:1px solid #222;position:sticky;top:0;z-index:100;">
+  <div class="container" style="padding-top:8px;padding-bottom:0;">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center;padding-bottom:8px;">
+      <div style="text-align:center;"><div style="font-size:9px;color:#666;text-transform:uppercase;">CTL</div><div style="font-size:18px;font-weight:700;color:#3b82f6;">{ctl:.0f}</div></div>
+      <div style="text-align:center;"><div style="font-size:9px;color:#666;text-transform:uppercase;">ATL</div><div style="font-size:18px;font-weight:700;color:#ef4444;">{atl:.0f}</div></div>
+      <div style="text-align:center;"><div style="font-size:9px;color:#666;text-transform:uppercase;">TSB · {forma_label}</div><div style="font-size:18px;font-weight:700;color:{cor_tsb};">{tsb:+.0f}</div></div>
+      <div style="width:1px;background:#333;height:28px;"></div>
+      <div style="text-align:center;"><div style="font-size:9px;color:#666;text-transform:uppercase;">FTP</div><div style="font-size:18px;font-weight:700;color:#fbbf24;">{FTP}W</div></div>
+      <div style="text-align:center;"><div style="font-size:9px;color:#666;text-transform:uppercase;">W/kg</div><div style="font-size:18px;font-weight:700;color:#fbbf24;">{wkg}</div></div>
+      <div style="text-align:center;"><div style="font-size:9px;color:#666;text-transform:uppercase;">Peso</div><div style="font-size:18px;font-weight:700;color:#888;">{PESO}kg</div></div>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn" id="btn-hoje" onclick="showTab('hoje')">⏰ Hoje</button>
+      <button class="tab-btn" id="btn-semana" onclick="showTab('semana')">📅 Semana</button>
+      <button class="tab-btn" id="btn-proxima" onclick="showTab('proxima')">➡️ Próxima</button>
+      <button class="tab-btn" id="btn-historico" onclick="showTab('historico')">📚 Histórico</button>
+      <button class="tab-btn" id="btn-condicionamento" onclick="showTab('condicionamento')">💪 Condicionamento</button>
+      <button class="tab-btn" id="btn-analytics" onclick="showTab('analytics')">📊 Analytics</button>
+    </div>
+  </div>
+</div>
+<div class="container">
+  <div class="tab-content" id="tab-hoje">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">{card_hoje_html}{card_prox_html}</div>
+    {bloco_html}
+    <div style="background:#0a0a0a;padding:12px;border-radius:8px;margin-bottom:12px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:11px;">
+        <div style="color:#666;">TSS Semana</div>
+        <div style="color:#ddd;font-weight:700;">{int(tss_real)} / {TSS_META_SEMANA}</div>
+        <div style="color:{tss_cor};font-weight:700;">{tss_pct}%</div>
+      </div>
+      <div style="background:#1a1a1a;height:8px;border-radius:4px;overflow:hidden;"><div style="background:{tss_cor};height:100%;width:{tss_bar}%;"></div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+      <div style="background:#0a0a0a;padding:12px;border-radius:8px;"><div style="font-size:10px;color:#666;margin-bottom:4px;">W/KG</div><div style="font-size:22px;font-weight:700;color:#fbbf24;">{wkg}</div><div style="font-size:10px;color:#666;">Meta CTL: {meta_ctl}</div></div>
+      {vo2_card}
+    </div>
+    {readiness_html}
+  </div>
+  <div class="tab-content" id="tab-semana">
+    <div style="display:flex;justify-content:space-between;margin-bottom:12px;font-size:12px;color:#888;">
+      <span>Aderência: <b style="color:#4ade80;">{analise['aderencia_pct']}%</b></span>
+      <span>TSS: <b style="color:#fbbf24;">{int(tss_real)}/{TSS_META_SEMANA}</b></span>
+    </div>
+    {aba_semana_html}
+  </div>
+  <div class="tab-content" id="tab-proxima">
+    <div style="background:#0a0a0a;padding:12px;border-radius:8px;margin-bottom:12px;border-left:3px solid {bloco_prox_info['cor']};"><div style="font-size:11px;color:{bloco_prox_info['cor']};font-weight:700;margin-bottom:4px;">{bloco_prox_info['icone']} {bloco_prox_info['nome']} — Semana {prox_semana}/4</div>{razoes_html}</div>
+    {aba_proxima_html}
+  </div>
+  <div class="tab-content" id="tab-historico">
+    <div style="font-size:11px;color:#666;margin-bottom:12px;">Últimos {min(50,len(treinos_list))} treinos</div>
+    {aba_historico_html if aba_historico_html else '<div style="color:#666;padding:20px;text-align:center;">Nenhum treino registrado</div>'}
+  </div>
+  <div class="tab-content" id="tab-condicionamento">
+    {comparacao_html}{grafico_ctl}{distrib_html}
+  </div>
+  <div class="tab-content" id="tab-analytics">
+    {aba_analytics_html}
+  </div>
+</div>
+<script>
+{js_toggle}
+showTab('hoje');
+</script>
+</body>
+</html>"""
+    return html
+
+
+# ─── MAIN ──────────────────────────────────────────────────────────────────
+
+if __name__ == '__main__':
+    print("🚴 Strava Coach v12 — gerando dashboard...")
+    treinos, wellness, fitness, estado, analytics_data = load_data()
+    html = build_dashboard(treinos, wellness, fitness, estado, analytics_data)
+    out = 'dashboard.html'
+    with open(out, 'w', encoding='utf-8') as f:
+        f.write(html)
+    print(f"✅ Dashboard gerado: {out} ({len(html)//1024}KB, {len(treinos)} treinos)")
