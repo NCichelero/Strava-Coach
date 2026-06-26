@@ -417,7 +417,6 @@ def previsao_forma(historico, data_alvo_str, tss_planejado_semana=350):
 
 def calcular_watts_bloco(bloco, ftp):
     """Adiciona watts exatos e FC esperada a cada bloco de treino."""
-    from zonas_fc import ZONAS_FC  # importa do dashboard_generator
     b = dict(bloco)
     w_min = int(ftp * b["pct_min"])
     w_max = int(ftp * b["pct_max"])
