@@ -1049,13 +1049,14 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}, inter
     # Watts exatos nos blocos do plano atual (enriquece todos os dias)
     if usa_intervals:
         for dia in analise['dias']:
-            if dia['plano'].get('blocos'):
-                dia['plano']['blocos'] = [calcular_watts_bloco(b, FTP) for b in dia['plano']['blocos']]
+            if dia['plano'].get('tipo') == 'ciclismo' and dia['plano'].get('blocos'):
+                dia['plano']['blocos'] = [calcular_watts_bloco(b, FTP) for b in dia['plano']['blocos'] if b.get('pct_min')]
         for wd in plano_proxima:
-            if plano_proxima[wd].get('blocos'):
-                plano_proxima[wd]['blocos'] = [calcular_watts_bloco(b, FTP) for b in plano_proxima[wd]['blocos']]
+            if plano_proxima[wd].get('tipo') == 'ciclismo' and plano_proxima[wd].get('blocos'):
+                plano_proxima[wd]['blocos'] = [calcular_watts_bloco(b, FTP) for b in plano_proxima[wd]['blocos'] if b.get('pct_min')]
 
     # RPE recente
+    previsao_html = ''
     rpe_resumo = None
     if usa_intervals:
         atividades_intervals = intervals_dados.get('atividades', [])
@@ -1074,9 +1075,9 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}, inter
             previsao_html += f'<div style="font-size:11px;color:#888;margin-bottom:6px;">{prev["dias_faltam"]} dias para o evento</div>'
             if estado_alvo:
                 previsao_html += f'<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:11px;margin-bottom:8px;">'
-                previsao_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;font-size:9px;">CTL</div><div style="color:#3b82f6;font-weight:700;">{estado_alvo["ctl"]:.0f}</div></div>'
-                previsao_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;font-size:9px;">ATL</div><div style="color:#ef4444;font-weight:700;">{estado_alvo["atl"]:.0f}</div></div>'
-                previsao_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;font-size:9px;">TSB</div><div style="color:{cor_tsb_prev};font-weight:700;">{estado_alvo["tsb"]:+.0f}</div></div>'
+                previsao_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;font-size:9px;">CTL</div><div style="color:#3b82f6;font-weight:700;">{estado_alvo.get("ctl",0):.0f}</div></div>'
+                previsao_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;font-size:9px;">ATL</div><div style="color:#ef4444;font-weight:700;">{estado_alvo.get("atl",0):.0f}</div></div>'
+                previsao_html += f'<div style="background:#111;padding:8px;border-radius:6px;text-align:center;"><div style="color:#666;font-size:9px;">TSB</div><div style="color:{cor_tsb_prev};font-weight:700;">{estado_alvo.get("tsb",0):+.0f}</div></div>'
                 previsao_html += '</div>'
             previsao_html += f'<div style="font-size:11px;color:{cor_tsb_prev};">{prev["sugestao"]}</div></div>'
 
@@ -1160,9 +1161,6 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}, inter
     tss_cor = '#4ade80' if 80 <= tss_pct <= 120 else ('#facc15' if 50 <= tss_pct <= 140 else '#f87171')
     tss_bar = min(tss_pct, 150)
     meta_ctl = CONFIG.get('meta_ctl', 45)
-
-    # Readiness
-    readiness_html = build_readiness_score(tsb, atl, ctl, historico)
 
     # VO2max card
     vo2_html = ''

@@ -382,7 +382,7 @@ def main():
     wellness = fetch_wellness(days=60)
     
     if wellness:
-        latest = wellness[-1]
+        latest = wellness[-1] if wellness else {}
         fitness = {
             'ctl': latest.get('ctl', 36),
             'atl': latest.get('atl', 54),

@@ -290,9 +290,9 @@ def treino_adaptativo(plano_dia, readiness, tsb):
             blocos_adj = []
             for b in plano["blocos"]:
                 b2 = dict(b)
-                # Reduz intensidade em 5%
-                b2["pct_min"] = round(b["pct_min"] * 0.95, 2)
-                b2["pct_max"] = round(b["pct_max"] * 0.95, 2)
+                if b2.get("pct_min"):
+                    b2["pct_min"] = round(b2["pct_min"] * 0.95, 2)
+                    b2["pct_max"] = round(b2.get("pct_max", 0.75) * 0.95, 2)
                 blocos_adj.append(b2)
             plano = dict(plano)
             plano["blocos"] = blocos_adj
@@ -361,8 +361,8 @@ def previsao_forma(historico, data_alvo_str, tss_planejado_semana=350):
     if not reais:
         return None
     ultimo = reais[-1]
-    ctl = ultimo["ctl"]
-    atl = ultimo["atl"]
+    ctl = ultimo.get("ctl", 36)
+    atl = ultimo.get("atl", 36)
 
     # TSS diário médio planejado por dia da semana
     tss_por_dia = {0: 70, 1: 0, 2: 100, 3: 0, 4: 95, 5: 180, 6: 60}
@@ -418,9 +418,11 @@ def previsao_forma(historico, data_alvo_str, tss_planejado_semana=350):
 def calcular_watts_bloco(bloco, ftp):
     """Adiciona watts exatos e FC esperada a cada bloco de treino."""
     b = dict(bloco)
-    w_min = int(ftp * b["pct_min"])
-    w_max = int(ftp * b["pct_max"])
-    w_avg = int(ftp * (b["pct_min"] + b["pct_max"]) / 2)
+    pct_min = b.get("pct_min", 0.60)
+    pct_max = b.get("pct_max", 0.75)
+    w_min = int(ftp * pct_min)
+    w_max = int(ftp * pct_max)
+    w_avg = int(ftp * (pct_min + pct_max) / 2)
     b["watts_min"] = w_min
     b["watts_max"] = w_max
     b["watts_str"] = f"{w_min}-{w_max}W"
