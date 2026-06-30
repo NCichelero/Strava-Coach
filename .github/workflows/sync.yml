@@ -2,9 +2,11 @@ name: Sync Strava Coach
 
 on:
   schedule:
-    - cron: '57 11 * * *'   # 08:57 BRT (UTC-3)
-    - cron: '57 14 * * *'   # 11:57 BRT (UTC-3)
-    - cron: '57 0 * * *'    # 21:57 BRT (UTC-3)
+    - cron: '57 8 * * *'    # 05:57 BRT
+    - cron: '57 11 * * *'   # 08:57 BRT
+    - cron: '57 14 * * *'   # 11:57 BRT
+    - cron: '57 21 * * *'   # 18:57 BRT
+    - cron: '57 0 * * *'    # 21:57 BRT
   workflow_dispatch:
 
 permissions:
@@ -23,19 +25,18 @@ jobs:
         with:
           python-version: '3.11'
 
-      - run: pip install requests
+      - name: Install dependencies
+        run: pip install requests
 
-      - name: Create .env file
+      - name: Create .env
         run: |
-          echo "CLAUDE_API_KEY=${{ secrets.CLAUDE_API_KEY }}" > .env
-          echo "INTERVALS_API_KEY=${{ secrets.INTERVALS_API_KEY }}" >> .env
+          echo "INTERVALS_API_KEY=${{ secrets.INTERVALS_API_KEY }}" > .env
           echo "STRAVA_CLIENT_ID=${{ secrets.STRAVA_CLIENT_ID }}" >> .env
           echo "STRAVA_CLIENT_SECRET=${{ secrets.STRAVA_CLIENT_SECRET }}" >> .env
           echo "STRAVA_REFRESH_TOKEN=${{ secrets.STRAVA_REFRESH_TOKEN }}" >> .env
 
-      - name: Run Strava Coach
+      - name: Fetch Strava data
         run: python strava_coach.py
-
 
       - name: Sync Intervals.icu
         run: python intervals_sync.py
@@ -44,19 +45,18 @@ jobs:
       - name: Generate Dashboard
         run: python dashboard_generator.py
 
-      - name: Commit and Push
+      - name: Commit and push
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A
-
+          git add dashboard.html data/
           if git diff --staged --quiet; then
-            echo "ℹ️ Nenhuma mudança"
+            echo "Sem mudanças"
           else
             git commit -m "Auto-update: $(TZ='America/Sao_Paulo' date +'%Y-%m-%d %H:%M BRT')"
             git push
           fi
 
-      - name: Notify on Failure
+      - name: Notify on failure
         if: failure()
-        run: echo "❌ Falha no sync"
+        run: echo "❌ Falha no sync — verificar Actions"
