@@ -8,15 +8,41 @@ import json
 import os
 from datetime import datetime, timedelta
 
-ATHLETE_ID = "i571333"
-API_KEY = "6ysaprmt15s19ibgbfabo2stw"
-BASE_URL = "https://intervals.icu/api/v1/athlete"
-AUTH = ("API_KEY", API_KEY)
-CACHE_FILE = "data/intervals_cache.json"
+# ── Credenciais via .env (mesmo padrão do strava_coach.py) ────────────────
+def _load_env():
+    env = {}
+    if os.path.exists('.env'):
+        with open('.env', 'r', encoding='utf-8') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#') and '=' in line:
+                    k, v = line.split('=', 1)
+                    env[k.strip()] = v.strip()
+    return env
+
+_ENV = _load_env()
+
+# ATHLETE_ID: lê do config.json (não é secreto) ou do .env como fallback
+def _get_athlete_id():
+    try:
+        import json as _json
+        cfg = _json.load(open('config.json', encoding='utf-8'))
+        return cfg.get('intervals_athlete_id', _ENV.get('INTERVALS_ATHLETE_ID', 'i571333'))
+    except Exception:
+        return _ENV.get('INTERVALS_ATHLETE_ID', 'i571333')
+
+ATHLETE_ID  = _get_athlete_id()
+API_KEY     = _ENV.get('INTERVALS_API_KEY', '')              # nunca hardcoded
+BASE_URL    = "https://intervals.icu/api/v1/athlete"
+AUTH        = ("API_KEY", API_KEY)
+CACHE_FILE  = "data/intervals_cache.json"
 CACHE_TTL_HOURS = 3
 
 
 def _get(endpoint, params=None):
+    if not API_KEY:
+        print("  ⚠️  INTERVALS_API_KEY não encontrado no .env — sync pulado")
+        return None
     url = f"{BASE_URL}/{ATHLETE_ID}/{endpoint}"
     try:
         r = requests.get(url, auth=AUTH, params=params, timeout=15)
