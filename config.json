@@ -1,10 +1,29 @@
 {
-  "tss_meta_semana": 350,
+  "tss_meta_semana": 280,
+  "tss_meta_retomada": 180,
+  "intervals_athlete_id": "i571333",
+  "meta_ctl": 45,
   "dias_off_planejados": [
     "2026-05-26",
     "2026-05-29",
     "2026-05-30",
-    "2026-05-31"
+    "2026-05-31",
+    "2026-06-03",
+    "2026-06-04",
+    "2026-06-05",
+    "2026-06-06",
+    "2026-06-07",
+    "2026-06-08",
+    "2026-06-09",
+    "2026-06-10",
+    "2026-06-12",
+    "2026-06-13",
+    "2026-06-14",
+    "2026-06-15",
+    "2026-06-16",
+    "2026-06-17",
+    "2026-06-19",
+    "2026-06-20"
   ],
-  "_obs": "Adicione datas YYYY-MM-DD em dias_off_planejados para não contar como treino perdido. tss_meta_semana pode ser ajustado por semana editando este arquivo."
+  "_obs": "tss_meta_semana=280 (realista 3d bike+long ride). intervals_athlete_id nao e secreto, fica aqui. API keys ficam nos secrets do GitHub."
 }
