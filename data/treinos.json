@@ -1986,5 +1986,83 @@
     "laps": [],
     "pico_5min": 0,
     "fc_repouso_dia": 0
+  },
+  "19176947966": {
+    "id": "19176947966",
+    "data": "2026-07-04",
+    "nome": "Ciclismo - Ez in Romeiros",
+    "categoria": "ciclismo",
+    "tipo": "Ride",
+    "sport_type": "Ride",
+    "duracao_min": 240.2,
+    "distancia_km": 79.47,
+    "potencia_avg": 118.0,
+    "potencia_max": 828,
+    "potencia_norm": 144,
+    "fc_avg": 132.7,
+    "fc_max": 174.0,
+    "elevacao": 1416.0,
+    "velocidade_avg": 20.7,
+    "velocidade_max": 69.3,
+    "calorias": 0,
+    "cadence_avg": 71.0,
+    "kilojoules": 1630.4,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 4731,
+        "dur_min": 78.8,
+        "dist_km": 23.1,
+        "vel_avg": 18.5,
+        "pot_avg": 117,
+        "pot_max": 0,
+        "fc_avg": 130,
+        "fc_max": 161,
+        "zona": "Z2"
+      },
+      {
+        "idx": 2,
+        "nome": "Lap 2",
+        "dur_seg": 3948,
+        "dur_min": 65.8,
+        "dist_km": 22.88,
+        "vel_avg": 20.9,
+        "pot_avg": 110,
+        "pot_max": 0,
+        "fc_avg": 127,
+        "fc_max": 158,
+        "zona": "Z1"
+      },
+      {
+        "idx": 3,
+        "nome": "Lap 3",
+        "dur_seg": 2721,
+        "dur_min": 45.4,
+        "dist_km": 16.76,
+        "vel_avg": 25.6,
+        "pot_avg": 116,
+        "pot_max": 0,
+        "fc_avg": 132,
+        "fc_max": 163,
+        "zona": "Z2"
+      },
+      {
+        "idx": 4,
+        "nome": "Lap 4",
+        "dur_seg": 3028,
+        "dur_min": 50.5,
+        "dist_km": 16.75,
+        "vel_avg": 20.1,
+        "pot_avg": 129,
+        "pot_max": 0,
+        "fc_avg": 142,
+        "fc_max": 174,
+        "zona": "Z2"
+      }
+    ],
+    "pico_5min": 202,
+    "fc_repouso_dia": 0
   }
 }
