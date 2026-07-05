@@ -1,29 +1,4 @@
 {
-  "18405903162": {
-    "id": "18405903162",
-    "data": "2026-05-06",
-    "nome": "Academia - Superiores",
-    "categoria": "academia",
-    "tipo": "WeightTraining",
-    "sport_type": "WeightTraining",
-    "duracao_min": 60.2,
-    "distancia_km": 0.0,
-    "potencia_avg": 0,
-    "potencia_max": 0,
-    "potencia_norm": 0,
-    "fc_avg": 80.1,
-    "fc_max": 125.0,
-    "elevacao": 0,
-    "velocidade_avg": 0.0,
-    "velocidade_max": 0.0,
-    "calorias": 0,
-    "cadence_avg": 0,
-    "kilojoules": 0,
-    "source": "strava",
-    "laps": [],
-    "pico_5min": 0,
-    "fc_repouso_dia": 0
-  },
   "18418597623": {
     "id": "18418597623",
     "data": "2026-05-07",
@@ -1933,6 +1908,31 @@
       }
     ],
     "pico_5min": 202,
+    "fc_repouso_dia": 0
+  },
+  "19193945046": {
+    "id": "19193945046",
+    "data": "2026-07-05",
+    "nome": "Academia - CORE",
+    "categoria": "academia",
+    "tipo": "WeightTraining",
+    "sport_type": "WeightTraining",
+    "duracao_min": 33.3,
+    "distancia_km": 0.0,
+    "potencia_avg": 0,
+    "potencia_max": 0,
+    "potencia_norm": 0,
+    "fc_avg": 80.3,
+    "fc_max": 116.0,
+    "elevacao": 0,
+    "velocidade_avg": 0.0,
+    "velocidade_max": 0.0,
+    "calorias": 0,
+    "cadence_avg": 0,
+    "kilojoules": 0,
+    "source": "strava",
+    "laps": [],
+    "pico_5min": 0,
     "fc_repouso_dia": 0
   }
 }
