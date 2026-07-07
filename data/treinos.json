@@ -1909,5 +1909,83 @@
     "laps": [],
     "pico_5min": 0,
     "fc_repouso_dia": 0
+  },
+  "19207266569": {
+    "id": "19207266569",
+    "data": "2026-07-06",
+    "nome": "Ciclismo - z2 leve",
+    "categoria": "ciclismo",
+    "tipo": "VirtualRide",
+    "sport_type": "VirtualRide",
+    "duracao_min": 18.0,
+    "distancia_km": 8.32,
+    "potencia_avg": 129.5,
+    "potencia_max": 164,
+    "potencia_norm": 137,
+    "fc_avg": 122.2,
+    "fc_max": 143.0,
+    "elevacao": 18.2,
+    "velocidade_avg": 27.8,
+    "velocidade_max": 38.4,
+    "calorias": 0,
+    "cadence_avg": 77.4,
+    "kilojoules": 139.8,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 1080,
+        "dur_min": 18.0,
+        "dist_km": 8.32,
+        "vel_avg": 27.7,
+        "pot_avg": 129,
+        "pot_max": 0,
+        "fc_avg": 122,
+        "fc_max": 143,
+        "zona": "Z1"
+      }
+    ],
+    "pico_5min": 161,
+    "fc_repouso_dia": 0
+  },
+  "19207491110": {
+    "id": "19207491110",
+    "data": "2026-07-06",
+    "nome": "Ciclismo - z2 leve",
+    "categoria": "ciclismo",
+    "tipo": "VirtualRide",
+    "sport_type": "VirtualRide",
+    "duracao_min": 22.6,
+    "distancia_km": 10.83,
+    "potencia_avg": 124.3,
+    "potencia_max": 282,
+    "potencia_norm": 127,
+    "fc_avg": 126.1,
+    "fc_max": 147.0,
+    "elevacao": 0,
+    "velocidade_avg": 28.8,
+    "velocidade_max": 39.2,
+    "calorias": 0,
+    "cadence_avg": 79.5,
+    "kilojoules": 168.4,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 1356,
+        "dur_min": 22.6,
+        "dist_km": 10.83,
+        "vel_avg": 28.8,
+        "pot_avg": 124,
+        "pot_max": 0,
+        "fc_avg": 126,
+        "fc_max": 147,
+        "zona": "Z1"
+      }
+    ],
+    "pico_5min": 139,
+    "fc_repouso_dia": 0
   }
 }
