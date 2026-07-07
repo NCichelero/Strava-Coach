@@ -755,17 +755,30 @@ def build_bloco_treino(b):
     h += '</div>'
     return h
 
-def build_treino_realizado_inline(t, uid):
+def build_treino_realizado_inline(t, uid, icu=None):
+    icu = icu or {}
     cat = t.get('categoria', 'outros')
     icon = '🚴' if cat == 'ciclismo' else ('🏋️' if cat == 'academia' else '🏃')
     cor_cat = '#3b82f6' if cat == 'ciclismo' else ('#a855f7' if cat == 'academia' else '#6b7280')
     nota = calcular_nota(t); zona = zona_treino(t); tss_t = tss_treino(t)
     if_v = if_treino(t); vi_v = vi_treino(t); laps_t = t.get('laps', []); pico5 = t.get('pico_5min', 0)
+    # Métricas extras do Intervals.icu (cruzadas por data)
+    _pn = icu.get('potencia_norm') or icu.get('potencia_avg') or t.get('potencia_norm') or t.get('potencia_avg')
+    _fc = icu.get('fc_avg') or t.get('fc_avg')
+    ef_v = round(_pn / _fc, 3) if _pn and _fc else None
+    if_icu = icu.get('if')
+    rpe_v = icu.get('rpe')
+    feel_v = icu.get('feel')
+    zonas_t = icu.get('zonas_fc_tempo') or []
     h = f'<div class="treino-item" data-categoria="{cat}" style="background:#0a0a0a;border-radius:6px;margin-bottom:6px;border-left:3px solid {cor_cat};overflow:hidden;">'
     h += f'<div class="treino-header" onclick="toggleTreino(\'{uid}\')" style="padding:10px 12px;cursor:pointer;user-select:none;">'
     h += f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:6px;">'
     h += f'<div style="font-size:12px;color:#ddd;"><span style="font-size:14px;">{icon}</span> <strong>{t.get("nome", "Sem nome")}</strong> <span style="color:#666;font-weight:400;font-size:10px;margin-left:6px;">▼</span></div>'
-    h += f'<div style="font-size:10px;color:#666;">{t.get("data", "")} · Nota: {nota}/10 · TSS: {tss_t}</div>'
+    _extras_hdr = ''
+    if rpe_v: _extras_hdr += f' · RPE {rpe_v}'
+    if feel_v: _extras_hdr += f' · Feel {feel_v}/5'
+    if ef_v: _extras_hdr += f' · EF {ef_v}'
+    h += f'<div style="font-size:10px;color:#666;">{t.get("data", "")} · Nota: {nota}/10 · TSS: {tss_t}{_extras_hdr}</div>'
     h += f'</div>'
     h += f'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;font-size:10px;color:#888;">'
     h += f'<div>Zona<br><span style="color:#ddd;font-weight:600;">{zona}</span></div>'
@@ -777,8 +790,12 @@ def build_treino_realizado_inline(t, uid):
     h += f'<div id="{uid}" class="treino-details" style="display:none;padding:12px;background:#050505;border-top:1px solid #1a1a1a;">'
     if cat == 'ciclismo':
         h += '<div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600;">📊 Métricas</div>'
-        h += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">'
-        metricas = [('TSS', f'{tss_t}', '#3b82f6'), ('IF', f'{if_v}', '#a855f7'),
+        h += '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px;">'
+        metricas = [('TSS', f'{tss_t}', '#3b82f6'),
+                    ('IF', f'{if_icu}' if if_icu else f'{if_v}', '#a855f7'),
+                    ('EF', f'{ef_v}' if ef_v else '—', '#10b981'),
+                    ('RPE', f'{rpe_v}/10' if rpe_v else '—', '#f59e0b'),
+                    ('Feel', f'{feel_v}/5' if feel_v else '—', '#22d3ee'),
                     ('VI', f'{vi_v}' if vi_v > 0 else '—', '#ec4899'),
                     ('NP', f'{int(t.get("potencia_norm", 0))}W' if t.get('potencia_norm', 0) > 0 else '—', '#f59e0b'),
                     ('Pot. Máx', f'{int(t.get("potencia_max", 0))}W' if t.get('potencia_max', 0) > 0 else '—', '#ef4444'),
@@ -792,6 +809,25 @@ def build_treino_realizado_inline(t, uid):
         for lbl, val, c in metricas:
             h += f'<div style="background:#0a0a0a;padding:10px;border-radius:6px;text-align:center;"><div style="font-size:9px;color:#666;text-transform:uppercase;margin-bottom:4px;">{lbl}</div><div style="font-size:14px;font-weight:700;color:{c};">{val}</div></div>'
         h += '</div>'
+        # Tempo em zonas FC (Intervals.icu)
+        _zt = [z for z in (zonas_t or []) if z]
+        if _zt and sum(_zt) > 60:
+            _tot = sum(_zt)
+            _cores_z = ['#9ca3af', '#4ade80', '#facc15', '#fb923c', '#f87171', '#dc2626', '#991b1b']
+            h += '<div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600;">🫀 Tempo em Zonas FC</div>'
+            h += '<div style="display:flex;height:18px;border-radius:4px;overflow:hidden;margin-bottom:6px;">'
+            for _zi, _zs in enumerate(_zt[:5] + ([sum(_zt[5:])] if len(_zt) > 5 else [])):
+                _pctz = _zs / _tot * 100
+                if _pctz < 0.5: continue
+                _cz = _cores_z[min(_zi, 4)]
+                h += f'<div style="width:{_pctz:.1f}%;background:{_cz};" title="Z{min(_zi+1,5)}: {_zs//60}min"></div>'
+            h += '</div>'
+            h += '<div style="display:flex;gap:10px;font-size:9px;color:#888;margin-bottom:14px;flex-wrap:wrap;">'
+            for _zi in range(min(len(_zt), 5)):
+                _zs = _zt[_zi] + (sum(_zt[5:]) if _zi == 4 and len(_zt) > 5 else 0)
+                if _zs < 30: continue
+                h += f'<span><span style="color:{_cores_z[_zi]};">●</span> Z{_zi+1} {_zs//60}min ({_zs/_tot*100:.0f}%)</span>'
+            h += '</div>'
         if laps_t and len(laps_t) > 1:
             h += f'<div style="font-size:10px;color:#666;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;font-weight:600;">🔄 Voltas ({len(laps_t)})</div>'
             h += '<div style="background:#0a0a0a;border-radius:6px;overflow:hidden;">'
@@ -817,7 +853,8 @@ def build_treino_realizado_inline(t, uid):
     h += '</div></div>'
     return h
 
-def build_dia_semana_atual(dia_info, idx):
+def build_dia_semana_atual(dia_info, idx, icu_map=None):
+    icu_map = icu_map or {}
     dias_pt = ['Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado', 'Domingo']
     plan = dia_info['plano']; realizados = dia_info['realizados']
     status = dia_info['status']; icone = dia_info['icone']; cor_status = dia_info['cor_status']
@@ -830,7 +867,7 @@ def build_dia_semana_atual(dia_info, idx):
     h += f'<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:18px;">{icone}</span>'
     h += f'<div style="font-size:13px;color:#ddd;font-weight:600;">{icon_cat} {dias_pt[dia_info["weekday"]]}'
     if is_hoje: h += ' <span style="color:#3b82f6;font-size:10px;margin-left:4px;">▶ HOJE</span>'
-    h += f' <span style="color:#888;font-weight:400;margin-left:6px;font-size:11px;">{plan["horario"]}</span></div></div>'
+    h += '</div></div>'
     h += f'<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">'
     h += f'<span style="font-size:10px;color:{cor_status};font-weight:600;padding:3px 8px;background:{cor_status}22;border-radius:4px;">{status.upper()}</span>'
     h += f'<span style="font-size:11px;color:#fbbf24;">{plan["nome"]}</span></div></div>'
@@ -845,7 +882,7 @@ def build_dia_semana_atual(dia_info, idx):
         h += f'<div style="color:{cor_tss};font-weight:700;">{pct}%</div></div>'
     if realizados:
         h += '<div style="margin-top:10px;"><div style="font-size:10px;color:#4ade80;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600;">✅ Realizado</div>'
-        for j, t in enumerate(realizados): h += build_treino_realizado_inline(t, f"atual-{idx}-{j}")
+        for j, t in enumerate(realizados): h += build_treino_realizado_inline(t, f"atual-{idx}-{j}", icu_map.get(t.get("data")))
         h += '</div>'
     mostrar_plano = (status in ['futuro', 'hoje', 'perdido', 'parcial', 'off']) and cat == 'ciclismo'
     if mostrar_plano:
@@ -877,7 +914,7 @@ def build_dia_proxima(wd, plan):
     cor = '#3b82f6' if cat == 'ciclismo' else ('#a855f7' if cat == 'academia' else '#6b7280')
     h = f'<div style="background:#0a0a0a;padding:14px;border-radius:8px;margin-bottom:10px;border-left:3px solid {cor};">'
     h += f'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px;">'
-    h += f'<div style="font-size:13px;color:#ddd;font-weight:600;">{icon} {dias_pt[wd]} <span style="color:#888;font-weight:400;margin-left:6px;font-size:11px;">{plan["horario"]}</span></div>'
+    h += f'<div style="font-size:13px;color:#ddd;font-weight:600;">{icon} {dias_pt[wd]}</div>'
     h += f'<div style="font-size:11px;color:#fbbf24;">{plan["nome"]} · {plan["dur_total"]}min · TSS {plan.get("tss_alvo", 0)}</div></div>'
     if cat == 'ciclismo':
         h += '<div style="display:grid;grid-template-columns:200px 60px 1fr 1fr 90px;gap:8px;font-size:10px;color:#666;padding:4px 8px;background:#1a1a1a;border-radius:4px;margin-bottom:4px;"><div>BLOCO</div><div>TEMPO</div><div>POTÊNCIA</div><div>% FTP</div><div>ZONA FC</div></div>'
@@ -1134,7 +1171,9 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}, inter
         card_hoje_html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;font-size:11px;margin-bottom:10px;">'
         card_hoje_html += f'<div style="color:#888;">Duração<br><span style="color:#fff;font-weight:700;font-size:14px;">{plan_h.get("dur_total",0)}min</span></div>'
         card_hoje_html += f'<div style="color:#888;">TSS Alvo<br><span style="color:#fbbf24;font-weight:700;font-size:14px;">{plan_h.get("tss_alvo",0)}</span></div>'
-        card_hoje_html += f'<div style="color:#888;">Horário<br><span style="color:#fff;font-weight:700;font-size:14px;">{plan_h.get("horario","—")}</span></div>'
+        _dur_h = plan_h.get("dur_total", 0) / 60
+        _if_alvo = round((plan_h.get("tss_alvo", 0) / (_dur_h * 100)) ** 0.5, 2) if _dur_h > 0 and plan_h.get("tss_alvo") else 0
+        card_hoje_html += f'<div style="color:#888;">IF alvo<br><span style="color:#a855f7;font-weight:700;font-size:14px;">{_if_alvo if _if_alvo else "—"}</span></div>'
         card_hoje_html += '</div>'
         if is_ciclismo_h and sups_hoje.get('carbo_g', 0) > 0:
             card_hoje_html += '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;font-size:10px;padding:8px;background:#0a0a0a;border-radius:6px;">'
@@ -1152,7 +1191,7 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}, inter
         card_prox_html = '<div style="background:#111;border-radius:12px;padding:18px;border-left:4px solid #444;margin-bottom:12px;">'
         card_prox_html += f'<div style="font-size:11px;color:#888;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;">📅 Próximo — {dias_pt[prox_dia["weekday"]]}</div>'
         card_prox_html += f'<div style="font-size:12px;color:#ddd;font-weight:600;margin-bottom:6px;">{plan_p.get("nome","")}</div>'
-        card_prox_html += f'<div style="font-size:11px;color:#666;">{plan_p.get("dur_total",0)}min · TSS {plan_p.get("tss_alvo",0)} · {plan_p.get("horario","")}</div>'
+        card_prox_html += f'<div style="font-size:11px;color:#666;">{plan_p.get("dur_total",0)}min · TSS {plan_p.get("tss_alvo",0)}</div>'
         card_prox_html += '</div>'
 
     # TSS semana
@@ -1171,10 +1210,17 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}, inter
         vo2_html += f'<div style="font-size:11px;color:{cor_pot};margin-top:4px;">{label_pot} · Pico 5min: {melhor_5min}W</div>'
         vo2_html += '</div>'
 
+    # Mapa Intervals por data (métricas extras nos cards de treino)
+    icu_map = {}
+    for _a in (intervals_dados.get('atividades') or []):
+        _d = _a.get('data')
+        if _d and _d not in icu_map:
+            icu_map[_d] = _a
+
     # ── Aba Semana
     aba_semana_html = ''
     for i, dia_info in enumerate(analise['dias']):
-        aba_semana_html += build_dia_semana_atual(dia_info, i)
+        aba_semana_html += build_dia_semana_atual(dia_info, i, icu_map)
 
     # ── Aba Próxima
     aba_proxima_html = ''
@@ -1184,7 +1230,7 @@ def build_dashboard(treinos, wellness, fitness, estado, analytics_data={}, inter
     razoes_html = ''.join(f'<div style="font-size:11px;color:#888;padding:3px 0;">{r}</div>' for r in razoes_prox)
 
     # ── Aba Histórico
-    aba_historico_html = ''.join(build_treino_realizado_inline(t, f'hist-{i}') for i, t in enumerate(treinos_list[:50]))
+    aba_historico_html = ''.join(build_treino_realizado_inline(t, f'hist-{i}', icu_map.get(t.get('data'))) for i, t in enumerate(treinos_list[:50]))
 
     # ── Aba Condicionamento
     grafico_ctl = build_grafico_ctl_atl_tsb(historico)
@@ -1219,7 +1265,7 @@ function toggleTreino(id){var el=document.getElementById(id);if(el)el.style.disp
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>🚴 Strava Coach v12</title>
+<title>🚴 Strava Coach v12.2</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
 *{{box-sizing:border-box;margin:0;padding:0;}}
@@ -1305,7 +1351,7 @@ showTab('hoje');
 # ─── MAIN ──────────────────────────────────────────────────────────────────
 
 if __name__ == '__main__':
-    print("🚴 Strava Coach v12 — gerando dashboard...")
+    print("🚴 Strava Coach v12.2 — gerando dashboard...")
     treinos, wellness, fitness, estado, analytics_data, intervals_dados = load_data()
     html = build_dashboard(treinos, wellness, fitness, estado, analytics_data, intervals_dados)
     out = 'dashboard.html'
