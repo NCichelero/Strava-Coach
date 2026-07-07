@@ -1,5 +1,5 @@
 """
-intervals_api.py — Integração com Intervals.icu
+intervals_api.py — Integração com Intervals.icu (v12.2)
 Busca: wellness (HRV, sono, FC repouso), CTL/ATL/TSB, atividades, perceived exertion
 """
 
@@ -114,7 +114,11 @@ def buscar_atividades(dias=60):
         "oldest": inicio,
         "fields": "id,name,start_date_local,type,moving_time,distance,icu_training_load,"
                   "icu_ctl_end,icu_atl_end,icu_tsb_end,perceived_exertion,average_heartrate,"
-                  "weighted_average_watts,average_watts,max_heartrate,icu_rpe"
+                  "weighted_average_watts,average_watts,max_heartrate,icu_rpe,"
+                  "icu_weighted_average_watts,icu_average_watts,power,"
+                  "icu_intensity,icu_variability_index,average_cadence,"
+                  "total_elevation_gain,calories,icu_hr_zone_times,feel,"
+                  "average_speed,max_speed,trimp"
     })
     if not data:
         return []
@@ -135,11 +139,32 @@ def buscar_atividades(dias=60):
             "rpe": a.get("perceived_exertion") or a.get("icu_rpe"),
             "fc_avg": a.get("average_heartrate"),
             "fc_max": a.get("max_heartrate"),
-            "potencia_norm": a.get("weighted_average_watts"),
-            "potencia_avg": a.get("average_watts"),
+            "potencia_norm": (a.get("icu_weighted_average_watts") or
+                              a.get("weighted_average_watts") or
+                              a.get("power")),
+            "potencia_avg": (a.get("icu_average_watts") or
+                             a.get("average_watts")),
+            "if": a.get("icu_intensity"),
+            "vi": a.get("icu_variability_index"),
+            "cadencia": a.get("average_cadence"),
+            "elevacao": a.get("total_elevation_gain"),
+            "calorias": a.get("calories"),
+            "feel": a.get("feel"),
+            "trimp": a.get("trimp"),
+            "vel_avg_kmh": round(a.get("average_speed", 0) * 3.6, 1) if a.get("average_speed") else None,
+            "zonas_fc_tempo": a.get("icu_hr_zone_times"),
         })
 
     return sorted(atividades, key=lambda x: x["data"], reverse=True)
+
+
+def ef_atividade(a):
+    """EF = potência (NP ou média) / FC média. None se faltar dado."""
+    pn = a.get("potencia_norm") or a.get("potencia_avg")
+    fc = a.get("fc_avg")
+    if pn and fc:
+        return round(pn / fc, 3)
+    return None
 
 
 def buscar_fitness_atual():
@@ -465,20 +490,38 @@ def _cadencia_por_zona(zona):
 
 
 def resumo_rpe_recente(atividades, dias=14):
-    """Calcula RPE médio das últimas N atividades para calibrar dificuldade."""
+    """RPE médio + tendência de EF (eficiência aeróbica) das últimas semanas."""
     corte = (datetime.now() - timedelta(days=dias)).strftime("%Y-%m-%d")
-    recentes = [a for a in atividades if a["data"] >= corte and a.get("rpe")]
-    if not recentes:
-        return None
-    rpes = [a["rpe"] for a in recentes]
-    avg = sum(rpes) / len(rpes)
+    recentes = [a for a in atividades if a.get("data", "") >= corte]
+
+    com_rpe = [a["rpe"] for a in recentes if a.get("rpe")]
+    rpe_avg = round(sum(com_rpe) / len(com_rpe), 1) if com_rpe else None
+
+    # EF por atividade (só ciclismo com potência+FC)
+    ef_lista = []
+    for a in sorted(atividades, key=lambda x: x.get("data", ""))[-30:]:
+        ef = ef_atividade(a)
+        if ef and a.get("tipo") in ("VirtualRide", "Ride", "EBikeRide"):
+            ef_lista.append({"data": a["data"], "ef": ef})
+
+    ef_recente = [x["ef"] for x in ef_lista if x["data"] >= corte]
+    ef_anterior = [x["ef"] for x in ef_lista if x["data"] < corte]
+    ef_trend = None
+    if ef_recente and ef_anterior:
+        avg_rec = sum(ef_recente) / len(ef_recente)
+        avg_ant = sum(ef_anterior) / len(ef_anterior)
+        ef_trend = round((avg_rec - avg_ant) / avg_ant * 100, 1)
+
     return {
-        "rpe_medio": round(avg, 1),
+        "rpe_medio": rpe_avg,
         "n_treinos": len(recentes),
+        "ef_lista": ef_lista[-8:],
+        "ef_trend": ef_trend,
         "interpretacao": (
-            "Treinos muito fáceis — considere aumentar intensidade" if avg < 4 else
-            "Carga adequada" if avg <= 6 else
-            "Treinos muito duros — monitore recuperação" if avg <= 8 else
-            "⚠️ Carga excessiva — risco de overtraining"
+            "Treinos muito fáceis — aumente intensidade" if rpe_avg and rpe_avg < 4 else
+            "Carga adequada" if rpe_avg and rpe_avg <= 6 else
+            "Treinos muito duros — monitore recuperação" if rpe_avg and rpe_avg <= 8 else
+            "⚠️ Carga excessiva" if rpe_avg else
+            "Sem dados de RPE — registre o esforço no Intervals/Strava"
         )
     }
