@@ -1,69 +1,4 @@
 {
-  "18469560738": {
-    "id": "18469560738",
-    "data": "2026-05-11",
-    "nome": "Ciclismo - Z2 aeróbico",
-    "categoria": "ciclismo",
-    "tipo": "VirtualRide",
-    "sport_type": "VirtualRide",
-    "duracao_min": 86.8,
-    "distancia_km": 40.75,
-    "potencia_avg": 140.9,
-    "potencia_max": 196,
-    "potencia_norm": 145,
-    "fc_avg": 128.4,
-    "fc_max": 140.0,
-    "elevacao": 153.4,
-    "velocidade_avg": 28.2,
-    "velocidade_max": 55.2,
-    "calorias": 0,
-    "cadence_avg": 78.7,
-    "kilojoules": 733.5,
-    "source": "strava",
-    "laps": [
-      {
-        "idx": 1,
-        "nome": "Lap 1",
-        "dur_seg": 28,
-        "dur_min": 0.5,
-        "dist_km": 0.11,
-        "vel_avg": 14.0,
-        "pot_avg": 83,
-        "pot_max": 0,
-        "fc_avg": 95,
-        "fc_max": 101,
-        "zona": "Z1"
-      },
-      {
-        "idx": 2,
-        "nome": "Lap 2",
-        "dur_seg": 4500,
-        "dur_min": 75.0,
-        "dist_km": 36.56,
-        "vel_avg": 29.2,
-        "pot_avg": 148,
-        "pot_max": 0,
-        "fc_avg": 130,
-        "fc_max": 140,
-        "zona": "Z2"
-      },
-      {
-        "idx": 3,
-        "nome": "Lap 3",
-        "dur_seg": 600,
-        "dur_min": 10.0,
-        "dist_km": 3.93,
-        "vel_avg": 23.6,
-        "pot_avg": 94,
-        "pot_max": 0,
-        "fc_avg": 114,
-        "fc_max": 132,
-        "zona": "Z1"
-      }
-    ],
-    "pico_5min": 150,
-    "fc_repouso_dia": 0
-  },
   "18487930894": {
     "id": "18487930894",
     "data": "2026-05-13",
@@ -1766,6 +1701,45 @@
       }
     ],
     "pico_5min": 222,
+    "fc_repouso_dia": 0
+  },
+  "19260764386": {
+    "id": "19260764386",
+    "data": "2026-07-10",
+    "nome": "Ciclismo - Z2",
+    "categoria": "ciclismo",
+    "tipo": "VirtualRide",
+    "sport_type": "VirtualRide",
+    "duracao_min": 59.7,
+    "distancia_km": 29.74,
+    "potencia_avg": 139.7,
+    "potencia_max": 195,
+    "potencia_norm": 141,
+    "fc_avg": 131.7,
+    "fc_max": 142.0,
+    "elevacao": 27.6,
+    "velocidade_avg": 29.9,
+    "velocidade_max": 41.1,
+    "calorias": 0,
+    "cadence_avg": 83.9,
+    "kilojoules": 500.6,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 3585,
+        "dur_min": 59.8,
+        "dist_km": 29.74,
+        "vel_avg": 29.9,
+        "pot_avg": 139,
+        "pot_max": 0,
+        "fc_avg": 131,
+        "fc_max": 142,
+        "zona": "Z2"
+      }
+    ],
+    "pico_5min": 155,
     "fc_repouso_dia": 0
   }
 }
