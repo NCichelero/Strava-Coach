@@ -1741,5 +1741,83 @@
     ],
     "pico_5min": 155,
     "fc_repouso_dia": 0
+  },
+  "19267918479": {
+    "id": "19267918479",
+    "data": "2026-07-11",
+    "nome": "Ciclismo - Z2",
+    "categoria": "ciclismo",
+    "tipo": "Ride",
+    "sport_type": "Ride",
+    "duracao_min": 134.6,
+    "distancia_km": 64.06,
+    "potencia_avg": 143.8,
+    "potencia_max": 597,
+    "potencia_norm": 152,
+    "fc_avg": 139.0,
+    "fc_max": 162.0,
+    "elevacao": 109.0,
+    "velocidade_avg": 28.6,
+    "velocidade_max": 39.3,
+    "calorias": 0,
+    "cadence_avg": 84.6,
+    "kilojoules": 1158.9,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 473,
+        "dur_min": 7.9,
+        "dist_km": 2.67,
+        "vel_avg": 20.7,
+        "pot_avg": 116,
+        "pot_max": 0,
+        "fc_avg": 129,
+        "fc_max": 158,
+        "zona": "Z2"
+      },
+      {
+        "idx": 2,
+        "nome": "Lap 2",
+        "dur_seg": 5279,
+        "dur_min": 88.0,
+        "dist_km": 44.31,
+        "vel_avg": 30.3,
+        "pot_avg": 155,
+        "pot_max": 0,
+        "fc_avg": 142,
+        "fc_max": 162,
+        "zona": "Z2"
+      },
+      {
+        "idx": 3,
+        "nome": "Lap 3",
+        "dur_seg": 1820,
+        "dur_min": 30.3,
+        "dist_km": 14.53,
+        "vel_avg": 28.7,
+        "pot_avg": 128,
+        "pot_max": 0,
+        "fc_avg": 136,
+        "fc_max": 155,
+        "zona": "Z2"
+      },
+      {
+        "idx": 4,
+        "nome": "Lap 4",
+        "dur_seg": 678,
+        "dur_min": 11.3,
+        "dist_km": 2.56,
+        "vel_avg": 18.8,
+        "pot_avg": 98,
+        "pot_max": 0,
+        "fc_avg": 121,
+        "fc_max": 151,
+        "zona": "Z1"
+      }
+    ],
+    "pico_5min": 186,
+    "fc_repouso_dia": 0
   }
 }
