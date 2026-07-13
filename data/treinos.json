@@ -1,29 +1,4 @@
 {
-  "18497624398": {
-    "id": "18497624398",
-    "data": "2026-05-13",
-    "nome": "Academia - Inferiores",
-    "categoria": "academia",
-    "tipo": "WeightTraining",
-    "sport_type": "WeightTraining",
-    "duracao_min": 64.0,
-    "distancia_km": 0.0,
-    "potencia_avg": 0,
-    "potencia_max": 0,
-    "potencia_norm": 0,
-    "fc_avg": 97.6,
-    "fc_max": 135.0,
-    "elevacao": 0,
-    "velocidade_avg": 0.0,
-    "velocidade_max": 0.0,
-    "calorias": 0,
-    "cadence_avg": 0,
-    "kilojoules": 0,
-    "source": "strava",
-    "laps": [],
-    "pico_5min": 0,
-    "fc_repouso_dia": 0
-  },
   "18521987049": {
     "id": "18521987049",
     "data": "2026-05-15",
@@ -1627,7 +1602,7 @@
   "19287775182": {
     "id": "19287775182",
     "data": "2026-07-12",
-    "nome": "Alongamento",
+    "nome": "Academia - Core + alongamentos",
     "categoria": "academia",
     "tipo": "Workout",
     "sport_type": "Workout",
