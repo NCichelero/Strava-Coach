@@ -1431,5 +1431,70 @@
     ],
     "pico_5min": 181,
     "fc_repouso_dia": 0
+  },
+  "19395936291": {
+    "id": "19395936291",
+    "data": "2026-07-20",
+    "nome": "Ciclismo - Z2 retomada",
+    "categoria": "ciclismo",
+    "tipo": "VirtualRide",
+    "sport_type": "VirtualRide",
+    "duracao_min": 90.5,
+    "distancia_km": 37.66,
+    "potencia_avg": 134.1,
+    "potencia_max": 147,
+    "potencia_norm": 135,
+    "fc_avg": 129.3,
+    "fc_max": 143.0,
+    "elevacao": 350.2,
+    "velocidade_avg": 25.0,
+    "velocidade_max": 59.8,
+    "calorias": 0,
+    "cadence_avg": 82.4,
+    "kilojoules": 728.6,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 600,
+        "dur_min": 10.0,
+        "dist_km": 3.44,
+        "vel_avg": 20.7,
+        "pot_avg": 120,
+        "pot_max": 0,
+        "fc_avg": 112,
+        "fc_max": 123,
+        "zona": "Z1"
+      },
+      {
+        "idx": 2,
+        "nome": "Lap 2",
+        "dur_seg": 4200,
+        "dur_min": 70.0,
+        "dist_km": 30.55,
+        "vel_avg": 26.2,
+        "pot_avg": 139,
+        "pot_max": 0,
+        "fc_avg": 131,
+        "fc_max": 143,
+        "zona": "Z2"
+      },
+      {
+        "idx": 3,
+        "nome": "Lap 3",
+        "dur_seg": 600,
+        "dur_min": 10.0,
+        "dist_km": 3.42,
+        "vel_avg": 20.5,
+        "pot_avg": 110,
+        "pot_max": 0,
+        "fc_avg": 128,
+        "fc_max": 138,
+        "zona": "Z1"
+      }
+    ],
+    "pico_5min": 140,
+    "fc_repouso_dia": 0
   }
 }
