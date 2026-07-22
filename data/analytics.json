@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-07-22T04:09:25.762969",
+  "gerado_em": "2026-07-22T11:04:48.239542",
   "power_curve": {
     "picos": {
       "5s": 935,
@@ -222,10 +222,6 @@
     "rua_pct": 0
   },
   "decoupling": {
-    "18620639836": {
-      "decoupling_pct": -0.6,
-      "qualidade": "excelente"
-    },
     "18641214480": {
       "decoupling_pct": -19.0,
       "qualidade": "excelente"
