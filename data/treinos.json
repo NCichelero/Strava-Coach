@@ -1870,5 +1870,70 @@
     ],
     "pico_5min": 174,
     "fc_repouso_dia": 0
+  },
+  "19731739523": {
+    "id": "19731739523",
+    "data": "2026-08-13",
+    "nome": "Ciclismo - Aerobic Endurance Ride",
+    "categoria": "ciclismo",
+    "tipo": "VirtualRide",
+    "sport_type": "VirtualRide",
+    "duracao_min": 66.6,
+    "distancia_km": 27.54,
+    "potencia_avg": 123.1,
+    "potencia_max": 159,
+    "potencia_norm": 127,
+    "fc_avg": 119.6,
+    "fc_max": 136.0,
+    "elevacao": 260.2,
+    "velocidade_avg": 24.8,
+    "velocidade_max": 57.5,
+    "calorias": 0,
+    "cadence_avg": 77.4,
+    "kilojoules": 492.0,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 600,
+        "dur_min": 10.0,
+        "dist_km": 3.86,
+        "vel_avg": 23.2,
+        "pot_avg": 110,
+        "pot_max": 0,
+        "fc_avg": 109,
+        "fc_max": 117,
+        "zona": "Z1"
+      },
+      {
+        "idx": 2,
+        "nome": "Lap 2",
+        "dur_seg": 2280,
+        "dur_min": 38.0,
+        "dist_km": 16.42,
+        "vel_avg": 25.9,
+        "pot_avg": 138,
+        "pot_max": 0,
+        "fc_avg": 124,
+        "fc_max": 136,
+        "zona": "Z1"
+      },
+      {
+        "idx": 3,
+        "nome": "Lap 3",
+        "dur_seg": 600,
+        "dur_min": 10.0,
+        "dist_km": 3.65,
+        "vel_avg": 21.9,
+        "pot_avg": 99,
+        "pot_max": 0,
+        "fc_avg": 115,
+        "fc_max": 130,
+        "zona": "Z1"
+      }
+    ],
+    "pico_5min": 138,
+    "fc_repouso_dia": 0
   }
 }
