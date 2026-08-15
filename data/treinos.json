@@ -1935,5 +1935,70 @@
     ],
     "pico_5min": 138,
     "fc_repouso_dia": 0
+  },
+  "19744373565": {
+    "id": "19744373565",
+    "data": "2026-08-14",
+    "nome": "Ciclismo - Recovery Ride",
+    "categoria": "ciclismo",
+    "tipo": "VirtualRide",
+    "sport_type": "VirtualRide",
+    "duracao_min": 50.2,
+    "distancia_km": 20.48,
+    "potencia_avg": 104.0,
+    "potencia_max": 123,
+    "potencia_norm": 104,
+    "fc_avg": 106.3,
+    "fc_max": 115.0,
+    "elevacao": 120.0,
+    "velocidade_avg": 24.5,
+    "velocidade_max": 46.6,
+    "calorias": 0,
+    "cadence_avg": 84.4,
+    "kilojoules": 313.3,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 1",
+        "dur_seg": 480,
+        "dur_min": 8.0,
+        "dist_km": 3.0,
+        "vel_avg": 22.5,
+        "pot_avg": 110,
+        "pot_max": 0,
+        "fc_avg": 103,
+        "fc_max": 111,
+        "zona": "Z1"
+      },
+      {
+        "idx": 2,
+        "nome": "Lap 2",
+        "dur_seg": 1800,
+        "dur_min": 30.0,
+        "dist_km": 12.2,
+        "vel_avg": 24.4,
+        "pot_avg": 104,
+        "pot_max": 0,
+        "fc_avg": 105,
+        "fc_max": 115,
+        "zona": "Z1"
+      },
+      {
+        "idx": 3,
+        "nome": "Lap 3",
+        "dur_seg": 480,
+        "dur_min": 8.0,
+        "dist_km": 3.29,
+        "vel_avg": 24.7,
+        "pot_avg": 98,
+        "pot_max": 0,
+        "fc_avg": 108,
+        "fc_max": 115,
+        "zona": "Z1"
+      }
+    ],
+    "pico_5min": 113,
+    "fc_repouso_dia": 0
   }
 }
