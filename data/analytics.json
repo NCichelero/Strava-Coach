@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-08-26T09:35:44.760138",
+  "gerado_em": "2026-08-26T12:30:27.486983",
   "power_curve": {
     "picos": {
       "5s": 992,
@@ -222,10 +222,6 @@
     "rua_pct": 0
   },
   "decoupling": {
-    "19084937105": {
-      "decoupling_pct": -8.6,
-      "qualidade": "excelente"
-    },
     "19176947966": {
       "decoupling_pct": 1.8,
       "qualidade": "excelente"
@@ -420,11 +416,6 @@
     "n_treinos": 15
   },
   "historico_ftp": [
-    {
-      "mes": "2026-06",
-      "ftp_est": 162,
-      "wkg": 2.14
-    },
     {
       "mes": "2026-07",
       "ftp_est": 131,
