@@ -105,13 +105,13 @@ new Chart(document.getElementById('chart_ctl_atl'), {
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
         <div>
             <div style="color:#888;font-size:10px;">Maior CTL</div>
-            <div style="color:#10b981;font-size:18px;font-weight:bold;">48.1</div>
+            <div style="color:#10b981;font-size:18px;font-weight:bold;">47.8</div>
             <div style="color:#666;font-size:10px;">2026-09-28</div>
         </div>
         <div>
             <div style="color:#888;font-size:10px;">Melhor TSB</div>
-            <div style="color:#facc15;font-size:18px;font-weight:bold;">+17.9</div>
-            <div style="color:#666;font-size:10px;">2026-09-01</div>
+            <div style="color:#facc15;font-size:18px;font-weight:bold;">+8.7</div>
+            <div style="color:#666;font-size:10px;">2026-09-03</div>
         </div>
     </div>
 </div><div style="background:#1a2e1a;padding:16px;border-radius:8px;border:1px solid #333;">
@@ -145,7 +145,7 @@ new Chart(document.getElementById('chart_ctl_atl'), {
         <h3 style="color:#fbbf24;margin:0;font-size:14px;">📈 Progressão FTP (estimado por pico 20min)</h3>
         <div style="text-align:right;font-size:11px;">
             <span style="color:#fff;font-weight:700;">210W atual</span>
-            <span style="margin-left:10px;color:#10b981;font-weight:700;">+42W total</span>
+            <span style="margin-left:10px;color:#10b981;font-weight:700;">+79W total</span>
         </div>
     </div>
     <canvas id="chart_ftp_hist" height="80"></canvas>
@@ -156,11 +156,11 @@ new Chart(document.getElementById('chart_ctl_atl'), {
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ["2026-07", "2026-08"],
+                labels: ["2026-07", "2026-08", "2026-09"],
                 datasets: [
                     {
                         label: 'FTP Estimado (W)',
-                        data: [131, 173],
+                        data: [131, 173, 210],
                         borderColor: '#fbbf24',
                         backgroundColor: 'rgba(251,191,36,0.1)',
                         borderWidth: 2,
@@ -171,7 +171,7 @@ new Chart(document.getElementById('chart_ctl_atl'), {
                     },
                     {
                         label: 'W/kg',
-                        data: [1.73, 2.29],
+                        data: [1.73, 2.29, 2.78],
                         borderColor: '#ec4899',
                         backgroundColor: 'rgba(236,72,153,0.08)',
                         borderWidth: 2,
