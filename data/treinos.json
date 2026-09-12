@@ -2773,7 +2773,7 @@
   "20135780723": {
     "id": "20135780723",
     "data": "2026-09-11",
-    "nome": "",
+    "nome": "Ciclismo - Phosphate 6",
     "categoria": "ciclismo",
     "tipo": "VirtualRide",
     "sport_type": "VirtualRide",
@@ -2812,7 +2812,7 @@
   "20136114563": {
     "id": "20136114563",
     "data": "2026-09-11",
-    "nome": "MyWhoosh - Phosphate 6",
+    "nome": "Ciclismo - Phosphate 6",
     "categoria": "ciclismo",
     "tipo": "VirtualRide",
     "sport_type": "VirtualRide",
@@ -3184,6 +3184,45 @@
       }
     ],
     "pico_5min": 175,
+    "fc_repouso_dia": 0
+  },
+  "20136433611": {
+    "id": "20136433611",
+    "data": "2026-09-11",
+    "nome": "Ciclismo - Free-ride volume 30'",
+    "categoria": "ciclismo",
+    "tipo": "VirtualRide",
+    "sport_type": "VirtualRide",
+    "duracao_min": 30.6,
+    "distancia_km": 12.78,
+    "potencia_avg": 111.1,
+    "potencia_max": 216,
+    "potencia_norm": 116,
+    "fc_avg": 121.3,
+    "fc_max": 137.0,
+    "elevacao": 68.0,
+    "velocidade_avg": 25.1,
+    "velocidade_max": 43.8,
+    "calorias": 0,
+    "cadence_avg": 85.7,
+    "kilojoules": 204.0,
+    "source": "strava",
+    "laps": [
+      {
+        "idx": 1,
+        "nome": "Lap 0",
+        "dur_seg": 1837,
+        "dur_min": 30.6,
+        "dist_km": 12.78,
+        "vel_avg": 25.1,
+        "pot_avg": 111,
+        "pot_max": 0,
+        "fc_avg": 121,
+        "fc_max": 137,
+        "zona": "Z1"
+      }
+    ],
+    "pico_5min": 128,
     "fc_repouso_dia": 0
   }
 }
