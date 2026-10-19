@@ -1,10 +1,10 @@
 {
-  "gerado_em": "2026-10-19T05:24:23.210451",
+  "gerado_em": "2026-10-19T16:07:52.597192",
   "power_curve": {
     "picos": {
-      "5s": 992,
-      "15s": 992,
-      "30s": 992,
+      "5s": 976,
+      "15s": 976,
+      "30s": 976,
       "60s": 258,
       "180s": 238,
       "300s": 238,
@@ -222,10 +222,6 @@
     "rua_pct": 0
   },
   "decoupling": {
-    "19821149908": {
-      "decoupling_pct": -9.2,
-      "qualidade": "excelente"
-    },
     "19849631778": {
       "decoupling_pct": 1.1,
       "qualidade": "excelente"
