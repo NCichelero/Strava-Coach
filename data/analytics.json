@@ -1,5 +1,5 @@
 {
-  "gerado_em": "2026-10-21T05:24:14.461718",
+  "gerado_em": "2026-10-21T14:18:17.378580",
   "power_curve": {
     "picos": {
       "5s": 976,
@@ -9,15 +9,15 @@
       "180s": 238,
       "300s": 238,
       "600s": 238,
-      "1200s": 178,
-      "3600s": 179
+      "1200s": 151,
+      "3600s": 151
     },
     "ftp_atual": 210,
-    "ftp_estimado": 169,
-    "diferenca": -41,
+    "ftp_estimado": 143,
+    "diferenca": -67,
     "sugere_teste": false,
     "percentual_acima": 0,
-    "wkg_estimado": 2.24
+    "wkg_estimado": 1.89
   },
   "tss_balance": null,
   "forecast": {
@@ -222,10 +222,6 @@
     "rua_pct": 0
   },
   "decoupling": {
-    "19849631778": {
-      "decoupling_pct": 1.1,
-      "qualidade": "excelente"
-    },
     "19867285168": {
       "decoupling_pct": 9.5,
       "qualidade": "bom"
@@ -243,9 +239,9 @@
     "recomendado": false,
     "urgencia": "nenhuma",
     "ftp_atual": 210,
-    "ftp_estimado": 169,
-    "diferenca": -41,
-    "pct_diferenca": -19.5,
+    "ftp_estimado": 143,
+    "diferenca": -67,
+    "pct_diferenca": -31.9,
     "melhor_data": null,
     "dias_ate_teste": 0,
     "melhor_tsb": -999,
@@ -293,8 +289,8 @@
   "historico_ftp": [
     {
       "mes": "2026-08",
-      "ftp_est": 173,
-      "wkg": 2.29
+      "ftp_est": 124,
+      "wkg": 1.64
     },
     {
       "mes": "2026-09",
